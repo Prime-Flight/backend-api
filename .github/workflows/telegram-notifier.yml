@@ -1,5 +1,5 @@
 name: telegram-notifier
-on: [push, pull_request, comment]
+on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
