@@ -1,5 +1,5 @@
 name: telegram-notifier
-on: [push, pull_request]
+on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,4 +10,16 @@ jobs:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |  #https://help.github.com/en/actions/reference/contexts-and-expression-syntax-for-github-actions#github-context
-            ${{ github.event_name }} commit "${{github.event.head_commit.message}}" in ${{ github.repository }} by "${{ github.actor }}". ref[${{github.server_url}}/${{github.repository}}/commit/${{github.sha}}] branch @ ${{ github.ref_name }} }
+            ${{ github.event_name }} commit "${{github.event.head_commit.message}}" in ${{ github.repository }} by "${{ github.actor }}". ref[${{github.server_url}}/${{github.repository}}/commit/${{github.sha}}] branch @ ${{ github.ref_name }}
+on: pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Pull Request Status
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |  #https://help.github.com/en/actions/reference/contexts-and-expression-syntax-for-github-actions#github-context
+            ${{ github.event_name }} in ${{ github.repository }} by "${{ github.actor }}". ref[${{github.server_url}}/${{github.repository}}/pulls] 
