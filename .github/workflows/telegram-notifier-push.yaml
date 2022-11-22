@@ -1,4 +1,4 @@
-name: telegram-notifier
+name: telegram-notifier-push
 on: push
 jobs:
   build:

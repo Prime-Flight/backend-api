@@ -1,0 +1,477 @@
+openapi: 3.0.0
+
+info:
+  title: Prime Flight API Documentation
+  version: '1.0'
+
+servers:
+  - url : 'http://localhost:3213/api'
+    description: Local Development Server
+  - url : 'https://backend-api-development.up.railway.app/api'
+    description: Remote Development Server
+  - url : 'https://backend-api-staging.up.railway.app/api'
+    description: Remote Staging Server
+  - url : 'https://backend-api-production-8d9e.up.railway.app/api'
+    description: Remote Production Server
+
+components:
+  responses:
+    UnauthorizedError:
+      description: Invalid Access Token
+      content:
+        application/json:
+          examples:
+            Unauthorized:
+              value:
+                status: false
+                message: You are not authorized  
+                data: null
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      title: User
+      type: object
+      description: 'User can have three role as an Admin, Buyer and Anonymous User ( not registered )'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for User
+        name:
+          type: string
+        email:
+          type: string
+          description: the email should be unique, one email one user  
+        password:
+          type: string
+          description: the password should be encrypted  
+        url_profile_picture:
+          type: string
+          description: the url of picture profile using imagekit, the default picture is null then it should be providing an anonymous image if it's null 
+        gender:
+          type: enum
+          description: radio button male or female
+        is_google:
+          type: boolean
+          description: To check if the user is using the google authentication if user have registered with google then we give the warning to user to login with google instead of regular email    
+        role:
+          type: integer
+          description: A foreign key for the role of user like 'admin' and 'buyer'
+        nationality:
+          type: string
+          description: Nationality to determine the booking input for passport or country identifier (KTP)  
+      required:
+        - id
+        - name
+        - email
+        - password
+        - is_google
+        - role
+        - nationality
+    Role:
+      title: Role
+      type: object
+      description: 'Role Based Auth This is for middleware Admin and User and Guest'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for User
+        name:
+          type: string
+        read:
+          type: boolean
+          description: Read Permission of a function and data 
+        write:
+          type: boolean
+          description: Write Permission of a function and data 
+      required:
+        - id
+        - name
+        - read
+        - write
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: Api for Auth 
+
+paths:
+  '/auth/register':
+    post:
+      summary: Create New User
+      operationId: post-user-register
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Nanda Suparman:
+                  value:
+                    status: true
+                    message: Successfully Registered With Email
+                    data:
+                      id: 1
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: male
+                      isGoogle: false
+                      role: 2
+                      nationality: Indonesian
+        '400':
+          description: Missing Detail Information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Failed Registered User :
+                  value:
+                    status: false
+                    message: Failed Register With Email, ${{err}}
+                    data: null
+        '409':
+          description: Email Already Used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Email Already Used :
+                  value:
+                    status: false
+                    message: Failed Register With Your Email Because Email Already Used, Please Use Another Email.
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                email: 
+                  type: string
+                password: 
+                  type: string
+                nationality: 
+                  type: string
+              required:
+                - name
+                - email
+                - password
+                - nationality
+            examples:
+              Create Nanda Suparman:
+                value:
+                  name: Nanda Suparman
+                  email: nandasuparman@gmail.com
+                  password: super-secret-password
+                  nationality: Indonesian
+      decription: Post the name email password and nationality, the password should be encrypted
+    description: Create new User
+  /auth/login:
+    post:
+      summary: Login
+      operationId: post-user-login
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Login Nanda Suparman:
+                  value:
+                    status: true
+                    message: Successfully Login
+                    data:
+                      email: nandasuparman@gmail.com
+                      token: <JWTtoken> 
+        '400':
+          description: Missing Detail Information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Missing Detail Info:
+                  value:
+                    status: false
+                    message: Bad Request
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                password: 
+                  type: string
+              required:
+                - email
+                - password
+            examples:
+              Login Nanda Suparman:
+                  email: "nandasuparman@gmail.com"
+                  password: "super-secret-password"
+      decription: Post the login and should be encrypted and also should be returned jwt token.
+    description: Login User
+
+  /auth/login/google:
+    get:
+      summary: Login with Google
+      operationId: get-auth-login-google
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Login With Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+              examples:
+                Successfully Login With Google:
+                  value:
+                    status: true
+                    message: Successfully Login with Google
+                    data:
+                      user_id: 1
+                      token: <JWTToken>
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+              examples:
+                Message already registered with email:
+                  value:
+                    status: false
+                    message: You have registered with your email, Please login with your email instead
+                    data: null
+      decription: Get the Google Login using the Authenticate.
+    description: Login User With Google
+
+  /auth/whoami:
+    get:
+      summary: Who am I is a function to check the current user it consists a Bearer Token auth for finding the current logged in user 
+      operationId: get-auth-whoami
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Successfully Get Current User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Get Current User:
+                  value:
+                    status: true
+                    message: Successfully Get Current User
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: male
+                      is_google: false
+                      role: 2
+                      nationality: Indonesian
+
+  /auth/forgot-password:
+    get:
+      summary: Forgot Password Email Template
+      operationId: get-auth-forgot-password
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Send Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Render Email Forgot Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Email Forgot Password
+                    data:
+                      email: nandasuparman@gmail.com
+
+    post:
+      summary: Forgot Password
+      operationId: post-auth-forgot-password
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Send Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Send Email Forgot Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Email Forgot Password
+                    data:
+                      email: nandasuparman@gmail.com
+        '400':
+          description: Bad Request No Email Registered, Verify User Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Verify User because User email is unavailable  
+                    data: null
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                  description: Send the User Email to send the forgot password confirmation
+              required:
+                - email
+            examples:
+              Send Email to Nanda Suparman:
+                value:
+                  email: nandasuparman@gmail.com
+      decription: Post the email to send the forgot password 
+    description: Find and send to send forgot password account
+
+  /auth/reset-password:
+    post:
+      summary: Reset Password by finding email using the middleware (whoami) and getting the token from url and match the token with the current function
+      security:
+        - bearerAuth: []
+      operationId: post-auth-reset-password
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Successfully Reset Password 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Reset Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Reset Password
+                    data:
+                      email: nandasuparman@gmail.com
+                      newPassword: true
+        '400':
+          description: Bad Request No Email Registered, Reset User Password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Reset User Password because User Email is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '402':
+          description: Password does not match
+          content:
+            application/json:
+              examples:
+                Doesn't match password:
+                  value:
+                    status: false
+                    message: Your New Password and the Confirm New Password Does not match!  
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: 
+                  type: string
+                  description: New Password the user will use
+                confirm_new_password: 
+                  type: string
+                  description: Confirm the New Password the user will use
+              required:
+                - password:
+                - confirm_new_password:
+            examples:
+              Nanda Suparman Reset Password:
+                value:
+                  password: newer-password
+                  confirm_new_password: newer-password
+      decription: Post reset password by confirming 
+    description: Find and reset password account according to the user request
+
+  /auth/verify-user:
+    post:
+      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+      operationId: post-auth-verify-user
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Verified 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Send Email verify for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Verify Token
+                    data:
+                      email: nandasuparman@gmail.com
+                      token: <JWTToken>
+        '400':
+          description: Bad Request No Email Registered, Verify User Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Verify Because User is the email is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
