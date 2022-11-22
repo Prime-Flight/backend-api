@@ -9,9 +9,9 @@ servers:
     description: Local Development Server
   - url : 'https://backend-api-development.up.railway.app/api'
     description: Remote Development Server
-  - url : 'https://backend-api-development.up.railway.app/api'
+  - url : 'https://backend-api-staging.up.railway.app/api'
     description: Remote Staging Server
-  - url : 'https://backend-api-development.up.railway.app/api'
+  - url : 'https://backend-api-production-8d9e.up.railway.app/api'
     description: Remote Production Server
 
 components:
