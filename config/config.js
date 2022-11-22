@@ -1,11 +1,11 @@
 require('dotenv').config();
 
 const {
-  DB_USERNAME_DEVELOPMENT,
-  DB_PASSWORD_DEVELOPMENT,
-  DB_NAME_DEVELOPMENT,
-  DB_HOST_DEVELOPMENT,
-  DB_PORT_DEVELOPMENT,
+  DB_USERNAME_DEV,
+  DB_PASSWORD_DEV,
+  DB_NAME_DEV,
+  DB_HOST_DEV,
+  DB_PORT_DEV,
   DB_USERNAME_STAGING,
   DB_PASSWORD_STAGING,
   DB_NAME_STAGING,
@@ -21,11 +21,11 @@ const {
 
 module.exports = {
   "development": {
-    "username": DB_USERNAME_DEVELOPMENT,
-    "password": DB_PASSWORD_DEVELOPMENT,
-    "database": DB_NAME_DEVELOPMENT,
-    "host": DB_HOST_DEVELOPMENT,
-    "port": DB_PORT_DEVELOPMENT,
+    "username": DB_USERNAME_DEV,
+    "password": DB_PASSWORD_DEV,
+    "database": DB_NAME_DEV,
+    "host": DB_HOST_DEV,
+    "port": DB_PORT_DEV,
     "dialect": DB_DIALECT
   },
   "test": {
