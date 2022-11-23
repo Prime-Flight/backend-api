@@ -1,3 +1,4 @@
+const auth = require('./auth');
 module.exports = { 
     hello: (req, res, next) => {
         try {
@@ -10,5 +11,6 @@ module.exports = {
             next(err);
         }
     },
-
+    
+    auth
 }
