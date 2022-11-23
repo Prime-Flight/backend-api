@@ -1,9 +1,35 @@
-const { User } = require('../db/models')
+const { User } = require('../db/models');
+const bcrypt = require('bcrypt');
+const Validator = require('fastest-validator');
+const v = new Validator;
 
 module.exports = {
     register: async (req, res, next) => {
         try {
             const { name, email, password, gender, nationality } = req.body;
+
+            const schema = {
+                name: 'string',
+                email: 'email',
+                password: 'string',
+                gender: { type: "enum", values: ["Male", "Female"] },
+                nationality: 'string'
+            }
+
+            const validate = v.validate(req.body, schema)
+            if (validate.length) {
+                let err = "";
+                validate.forEach(e => {
+                    err = err + e.message + " "
+                });
+                console.log(err)
+                return res.status(400).json({
+                    status: false,
+                    message: `Failed Register With Email, ${err}`,
+                    data: null
+                });
+            }
+
             const existUser = await User.findOne({ where: { email } });
             if (existUser) {
                 return res.status(409).json({
@@ -12,13 +38,7 @@ module.exports = {
                     data: null
                 });
             };
-            if (name == "" || email == "" || password == "" || gender == "" || nationality == "" || !name || !email || !password || !gender || !nationality) {
-                return res.status(400).json({
-                    status: false,
-                    message: "Failed Register With Email, missing detail information",
-                    data: null
-                });
-            };
+
             const hashedPassword = await bcrypt.hash(password, 10);
 
             const addUser = await User.create({
@@ -35,7 +55,16 @@ module.exports = {
             return res.status(201).json({
                 status: true,
                 message: 'Successfully Registered With Email',
-                data: addUser
+                data: {
+                    id: addUser.id,
+                    name: addUser.name,
+                    email: addUser.email,
+                    url_profile_picture: addUser.url_profile_picture,
+                    gender: addUser.gender,
+                    isGoogle: addUser.isGoogle,
+                    role: addUser.role,
+                    nationality: addUser.nationality
+                }
             })
 
         } catch (err) {
