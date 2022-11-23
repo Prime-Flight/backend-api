@@ -162,6 +162,8 @@ paths:
                   type: string
                 password: 
                   type: string
+                gender:
+                  type: string
                 nationality: 
                   type: string
               required:
