@@ -200,7 +200,7 @@ paths:
                     message: Successfully Login
                     data:
                       email: nandasuparman@gmail.com
-                      token: <JWTtoken> 
+                      token: Bearer <JWTtoken> 
         '400':
           description: Missing Detail Information
           content:
@@ -253,7 +253,8 @@ paths:
                     message: Successfully Login with Google
                     data:
                       user_id: 1
-                      token: <JWTToken>
+                      email: nandasuparmin@gmail.com
+                      token: Bearer <JWTToken>
         '400':
           description: Bad Request
           content:
