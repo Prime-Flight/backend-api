@@ -9,8 +9,6 @@ servers:
     description: Local Development Server
   - url : 'https://backend-api-development.up.railway.app/api'
     description: Remote Development Server
-  - url : 'https://backend-api-staging.up.railway.app/api'
-    description: Remote Staging Server
   - url : 'https://backend-api-production-8d9e.up.railway.app/api'
     description: Remote Production Server
 
@@ -164,6 +162,8 @@ paths:
                   type: string
                 password: 
                   type: string
+                gender:
+                  type: string
                 nationality: 
                   type: string
               required:
@@ -200,7 +200,7 @@ paths:
                     message: Successfully Login
                     data:
                       email: nandasuparman@gmail.com
-                      token: Bearer <JWTtoken> 
+                      token: <JWTtoken> 
         '400':
           description: Missing Detail Information
           content:
@@ -254,7 +254,7 @@ paths:
                     data:
                       user_id: 1
                       email: nandasuparmin@gmail.com
-                      token: Bearer <JWTToken>
+                      token: <JWTToken>
         '400':
           description: Bad Request
           content:

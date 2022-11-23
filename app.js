@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const controller = require('./controllers')
+const controller = require('./controllers');
 const router = require('./routes');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
