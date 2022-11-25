@@ -4,6 +4,7 @@ const controller = require('./controllers');
 const router = require('./routes');
 const morgan = require('morgan');
 const methodOverride = require('method-override');
+const bodyParser = require('body-parser');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
 const { PORT } = process.env;
@@ -28,6 +29,7 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
+app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.json())
 app.use(morgan('dev'));
 app.set('view-engine', 'ejs');
