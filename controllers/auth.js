@@ -2,6 +2,10 @@ const { User } = require('../db/models');
 const bcrypt = require('bcrypt');
 const Validator = require('fastest-validator');
 const v = new Validator;
+const jwt = require('jsonwebtoken')
+const lib = require('../lib')
+const { JWT_SIGNATURE_KEY } = process.env;
+
 
 module.exports = {
     register: async (req, res, next) => {
@@ -95,8 +99,25 @@ module.exports = {
             next(err);
         }
     },
-    forgotPassword: (req, res, next) => {
+    forgotPassword: async (req, res, next) => {
         try {
+            const { email } = req.body;
+
+            // const existUser = await User.findOne({ where: { email } })
+            // if (existUser) {
+            const payload = 1
+            const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
+            const link = `http://localhost:3000/auth/reset-password?token=${token}`
+
+            emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: 'daniel', link: link })
+
+            await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
+
+            res.status(200).json({
+                status: true,
+                message: 'email sent successfully'
+            })
+            // }
         } catch (err) {
             next(err);
         }
