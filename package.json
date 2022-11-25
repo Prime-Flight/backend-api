@@ -8,6 +8,8 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "@sentry/node": "^7.21.1",
+    "@sentry/tracing": "^7.21.1",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.8",
