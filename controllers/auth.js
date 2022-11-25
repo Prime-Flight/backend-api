@@ -103,21 +103,21 @@ module.exports = {
         try {
             const { email } = req.body;
 
-            // const existUser = await User.findOne({ where: { email } })
-            // if (existUser) {
-            const payload = 1
-            const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
-            const link = `http://localhost:3000/auth/reset-password?token=${token}`
+            const existUser = await User.findOne({ where: { email } })
+            if (existUser) {
+                const payload = { user_id: existUser.id }
+                const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
+                const link = `http://localhost:3213/auth/reset-password?token=${token}`
 
-            emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: 'daniel', link: link })
+                emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: existUser.name, link: link })
 
-            await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
+                await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
 
-            res.status(200).json({
-                status: true,
-                message: 'email sent successfully'
-            })
-            // }
+                res.status(200).json({
+                    status: true,
+                    message: 'email sent successfully'
+                })
+            }
         } catch (err) {
             next(err);
         }
