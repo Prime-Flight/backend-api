@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY } = process.env;
 
-
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -75,8 +74,42 @@ module.exports = {
             next(err);
         }
     },
-    login: (req, res, next) => {
+    login: async (req, res, next) => {
         try {
+            const { email, password } = req.body;
+
+            const user = await User.findOne({ where: { email: email } });
+            if (!user) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'email or password doesn\'t match!'
+                });
+            }
+
+            const correct = await bcrypt.compare(password, user.password);
+            if (!correct) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'email or password doesn\'t match!'
+                });
+            }
+
+            // generate token
+            payload = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+            };
+            const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
+
+            return res.status(200).json({
+                status: false,
+                message: 'Successfully Login',
+                data: {
+                    email: user.email,
+                    token: token
+                }
+            });
         } catch (err) {
             next(err);
         }

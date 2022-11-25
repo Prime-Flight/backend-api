@@ -1,3 +1,3 @@
 const restrict = require('./restrict');
 
-module.exports = restrict
+module.exports = restrict;
