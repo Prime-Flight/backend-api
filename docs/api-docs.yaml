@@ -202,7 +202,7 @@ paths:
                       email: nandasuparman@gmail.com
                       token: <JWTtoken> 
         '400':
-          description: Missing Detail Information
+          description: Email Password Doesn't Match
           content:
             application/json:
               schema:
@@ -211,8 +211,7 @@ paths:
                 Missing Detail Info:
                   value:
                     status: false
-                    message: Bad Request
-                    data: null
+                    message: email or password doesn\'t match!
       requestBody:
         content:
           application/json:
