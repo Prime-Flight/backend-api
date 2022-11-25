@@ -7,9 +7,9 @@ info:
 servers:
   - url : 'http://localhost:3213/api'
     description: Local Development Server
-  - url : 'https://backend-api-development.up.railway.app/api'
-    description: Remote Development Server
-  - url : 'https://backend-api-production-8d9e.up.railway.app/api'
+  - url : 'https://primeflight-api-staging.km3ggwp.com/api'
+    description: Remote Staging Server
+  - url : 'https://primeflight-api.km3ggwp.com/api'
     description: Remote Production Server
 
 components:
@@ -170,6 +170,7 @@ paths:
                 - name
                 - email
                 - password
+                - gender
                 - nationality
             examples:
               Create Nanda Suparman:
@@ -177,6 +178,7 @@ paths:
                   name: Nanda Suparman
                   email: nandasuparman@gmail.com
                   password: super-secret-password
+                  gender: Male
                   nationality: Indonesian
       decription: Post the name email password and nationality, the password should be encrypted
     description: Create new User
