@@ -5,6 +5,7 @@ const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY } = process.env;
+
 module.exports = {
     register: async (req, res, next) => {
         try {
