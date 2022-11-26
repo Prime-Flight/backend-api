@@ -7,6 +7,8 @@ const methodOverride = require('method-override');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
 const { PORT } = process.env;
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
 Sentry.init({
   dsn: "https://5e67869c400345c9ade926085aba0ecd@o4504071404126208.ingest.sentry.io/4504219923972096",
@@ -29,6 +31,8 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 app.use(express.json())
+app.use(bodyParser.json());
+app.use(cors());
 app.use(morgan('dev'));
 app.set('view-engine', 'ejs');
 app.use(methodOverride('_method'));
