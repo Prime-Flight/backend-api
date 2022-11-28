@@ -21,11 +21,11 @@ const {
 
 module.exports = {
   "development": {
-    "username": DB_USERNAME,
-    "password": DB_PASSWORD,
-    "database": DB_NAME,
-    "host": DB_HOST,
-    "port": DB_PORT,
+    "username": DB_USERNAME_STAGING,
+    "password": DB_PASSWORD_STAGING,
+    "database": DB_NAME_STAGING,
+    "host": DB_HOST_STAGING,
+    "port": DB_PORT_STAGING,
     "dialect": DB_DIALECT
   },
   "test": {
