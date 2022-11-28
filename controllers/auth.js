@@ -99,6 +99,7 @@ module.exports = {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
