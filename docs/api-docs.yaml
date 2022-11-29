@@ -61,6 +61,9 @@ components:
         nationality:
           type: string
           description: Nationality to determine the booking input for passport or country identifier (KTP)  
+        is_verified:
+          type: boolean
+          description: To check if the user is verified
       required:
         - id
         - name
@@ -69,6 +72,7 @@ components:
         - is_google
         - role
         - nationality
+        - is_verified
     Role:
       title: Role
       type: object
@@ -327,6 +331,7 @@ paths:
                       isGoogle: false
                       role: 2
                       nationality: Indonesian
+                      is_verified: false
         '400':
           description: Missing Detail Information
           content:
@@ -642,7 +647,7 @@ paths:
 
   /auth/verify-user:
     post:
-      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+      summary: Verify User Using Email by Searching The Current User Logged In and change the value in the database for user `is_verified` to true 
       operationId: post-auth-verify-user
       security: 
         - bearerAuth: []
@@ -651,6 +656,44 @@ paths:
       responses:
         '200':
           description: User Successfully Verified 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Send Email verify for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Verify Token
+                    data:
+                      email: nandasuparman@gmail.com
+                      token: <JWTToken>
+        '400':
+          description: Bad Request No Email Registered, Verify User Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Verify Because User is the email is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/resend-email-verify-user:
+    post:
+      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+      operationId: resend-post-auth-verify-user
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: Resend Token for Your Email is already Send, here the we just send the email with a token to verify the user   
           content:
             application/json:
               schema:
