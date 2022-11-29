@@ -8,6 +8,14 @@ module.exports = {
     restrict: (req, res, next) => {
         try {
             const header = req.headers['authorization'];
+            // check the header argument
+            if(!header) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'You are not authorized!',
+                    data: null
+                });
+            }
             // split the token from the `Bearer`
             const token = header.split(' ')[1];
             if (!token) {
@@ -30,6 +38,7 @@ module.exports = {
                     data: null
                 });
             }
+            console.log(err);
             next(err);
         }
     }
