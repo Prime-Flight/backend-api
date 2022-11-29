@@ -61,6 +61,9 @@ components:
         nationality:
           type: string
           description: Nationality to determine the booking input for passport or country identifier (KTP)  
+        is_verified:
+          type: boolean
+          description: To check if the user is verified
       required:
         - id
         - name
@@ -69,6 +72,7 @@ components:
         - is_google
         - role
         - nationality
+        - is_verified
     Role:
       title: Role
       type: object
@@ -76,20 +80,221 @@ components:
       properties:
         id:
           type: integer 
-          description: Unique Identifier for User
+          description: Unique Identifier for Role
         name:
           type: string
-        read:
-          type: boolean
-          description: Read Permission of a function and data 
-        write:
-          type: boolean
-          description: Write Permission of a function and data 
+          description: Name of the Role for example = Admin 
       required:
         - id
         - name
+    Module:
+      title: Module
+      type: object
+      description: 'Module is for checking what module we are in'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Module
+        name:
+          type: string
+          description: Name of the Module for example = User Dashboard 
+      required:
+        - id
+        - name
+    Access:
+      title: Access
+      type: object
+      description: 'Access is for granting the user permission for using the Module'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        role_id:
+          type: integer 
+          description: Foreign key of Role Id
+        module_id:
+          type: integer 
+          description: Foreign key of Role Id
+        read:
+          type: boolean
+          description: Read Permission of a module and data 
+        write:
+          type: boolean
+          description: Write Permission of a module and data 
+      required:
+        - id
+        - role_id
+        - module_id
         - read
         - write
+    Transaction:
+      title: Transaction
+      type: object
+      description: 'Transaction that the User Do with the Application from the Booking'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking
+        total_price:
+          type: integer 
+          description: Foreign key of Role Id
+        status:
+          type: enum
+          description: Status consist of ("Rejected", "Pending", "Success") 
+      required:
+        - id
+        - booking_id
+        - total_price
+        - status
+    Flight:
+      title: Flight
+      type: object
+      description: 'The Flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        airport:
+          type: string 
+          description: Location for the Airport
+        flight_date:
+          type: date 
+          description: Date of the Airport
+      required:
+        - id
+        - airport
+        - flight_date
+    Booking:
+      title: Booking
+      type: object
+      description: 'The Booking User did in the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        destination:
+          type: integer 
+          description: Foreign key of Flight Model
+        user:
+          type: integer 
+          description: Foreign key of User Id
+        seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+        kode_booking:
+          type: string
+          description: Book Code 
+      required:
+        - id
+        - destination
+        - user
+        - seat
+        - kode_booking
+    BookingDetail:
+      title: BookingDetail
+      type: object
+      description: 'The Booking Detail for the document and flight code'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking Model
+        document_url:
+          type: string 
+          description: url for the booking detail for user after payment the transaction that the ticket will be generated to redeem a boarding pass 
+        kode_penerbangan:
+          type: string 
+          description: the flight code 
+      required:
+        - id
+        - booking_id
+        - document_url
+        - kode_penerbangan
+    Buyer:
+      title: Buyer
+      type: object
+      description: 'The Buyer is not the User that login, it consist the information for the User that responsible for the booking of the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        booking_detail_id:
+          type: integer 
+          description: Foreign key of Booking Detail
+        user:
+          type: integer 
+          description: Foreign key of User Id
+        seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+        kode_booking:
+          type: string
+          description: Book Code 
+      required:
+        - id
+        - destination
+        - user
+        - seat
+        - kode_booking
+    Passenger:
+      title: Passenger
+      type: object
+      description: 'Passenger is the information of the consumer that will redeem the ticket'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        buyer_id:
+          type: integer 
+          description: Foreign key of buyer
+        name:
+          type: string 
+          description: Foreign key of User Id
+        passenger_category:
+          type: enum 
+          description: Passenger Category uses ('child', 'adult') 
+        nik:
+          type: string
+          description: the ID of the passenger for adult 
+        passport_number:
+          type: string
+          description: the passport_number of the passenger for adult 
+        passenger_detail:
+          type: integer
+          description: foreign key of passpor detail 
+      required:
+        - id
+        - buyer_id
+        - name
+        - passenger_category
+        - passenger_detail
+    PassengerDetail:
+      title: PassengerDetail
+      type: object
+      description: 'PassengerDetail is the detail information such as passenger sensitive id on NIK or Passport'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        nik:
+          type: string
+          description: the ID number of the passenger for adult 
+        passport_number:
+          type: string
+          description: the passport number of the passenger for adult and foreign
+        gender:
+          type: enum
+          description: enum value "Male" and "Female"
+      required:
+        - id
+        - nik
+        - passport_number
+        - gender
 
 security:
   - bearerAuth: []
@@ -126,6 +331,7 @@ paths:
                       isGoogle: false
                       role: 2
                       nationality: Indonesian
+                      is_verified: false
         '400':
           description: Missing Detail Information
           content:
@@ -441,7 +647,7 @@ paths:
 
   /auth/verify-user:
     post:
-      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+      summary: Verify User Using Email by Searching The Current User Logged In and change the value in the database for user `is_verified` to true 
       operationId: post-auth-verify-user
       security: 
         - bearerAuth: []
@@ -450,6 +656,44 @@ paths:
       responses:
         '200':
           description: User Successfully Verified 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Send Email verify for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Verify Token
+                    data:
+                      email: nandasuparman@gmail.com
+                      token: <JWTToken>
+        '400':
+          description: Bad Request No Email Registered, Verify User Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Verify Because User is the email is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/resend-email-verify-user:
+    post:
+      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+      operationId: resend-post-auth-verify-user
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: Resend Token for Your Email is already Send, here the we just send the email with a token to verify the user   
           content:
             application/json:
               schema:
