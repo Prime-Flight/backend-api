@@ -5,8 +5,7 @@ const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY } = process.env;
-const localhost = 'http://localhost:3213/api'
-const doployHostTest = 'https://primeflight-api-staging.km3ggwp.com/api'
+const googleOauth2 = require('../utils/google');
 
 module.exports = {
     register: async (req, res, next) => {
@@ -107,6 +106,7 @@ module.exports = {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
@@ -122,8 +122,49 @@ module.exports = {
             next(err);
         }
     },
-    google: (req, res, next) => {
+    google: async (req, res, next) => {
         try {
+            const code = req.query.code;
+            if (!code) {
+                const url = googleOauth2.generateAuthURL();
+
+                return res.redirect(url);
+            }
+
+            // get token
+            await googleOauth2.setCredentials(code);
+
+            // get data user
+            const { data } = await googleOauth2.getUserData();
+
+            // check apakah user email ada di database
+            const userExist = await User.findOne({ where: { email: data.email } });
+
+            // if !ada -> simpan data user
+            if (!userExist) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'You have registered with your email, Please login with your email instead'
+                });
+            }
+
+            // generate token
+            payload = {
+                id: data.id,
+                name: data.name,
+                email: data.email,
+            };
+            const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
+
+            return res.status(200).json({
+                status: true,
+                message: 'Successfully Login with Google',
+                data: {
+                    user_id: data.id,
+                    email: data.email,
+                    token: token
+                }
+            });
         } catch (err) {
             next(err);
         }
