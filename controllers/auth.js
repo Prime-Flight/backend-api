@@ -5,6 +5,8 @@ const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY } = process.env;
+const localhost = 'http://localhost:3213/api'
+const doployHostTest = 'https://primeflight-api-staging.km3ggwp.com/api'
 
 module.exports = {
     register: async (req, res, next) => {
@@ -52,8 +54,14 @@ module.exports = {
                 gender,
                 isGoogle: false,
                 role: 2,
-                nationality
+                nationality,
+                isVerified: false
             });
+            const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "60s" })
+
+            const link = `${localhost}/auth/verify-user?token=${verifyToken}`
+
+            const sendEmail = await lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
             return res.status(201).json({
                 status: true,
@@ -140,8 +148,7 @@ module.exports = {
             if (existUser) {
                 const payload = { user_id: existUser.id }
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
-                const link = `http://localhost:3213/auth/reset-password?token=${token}`
-
+                const link = `${localhost}/auth/reset-password?token=${token}`
                 emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: existUser.name, link: link })
 
                 await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
@@ -161,8 +168,28 @@ module.exports = {
             next(err);
         }
     },
-    verifyUser: (req, res, next) => {
+    sendVerifyEmail: async (req, res, next) => {
         try {
+            const { email } = req.user;
+
+            const user = await User.findOne({ where: { email } })
+            const payload = {
+                user_id: user.id
+            }
+            const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "60s" })
+
+            let link = `${localhost}/auth/verify-user?token=${verifyToken}`
+
+            const sendEmail = await lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
+
+            if (sendEmail) {
+                res.status(200).json({
+                    status: true,
+                    message: 'Verification email sent successfully'
+                })
+            }
+
+
         } catch (err) {
             next(err);
         }

@@ -1,10 +1,12 @@
+require('dotenv').config();
+
 const jwt = require('jsonwebtoken');
 const {
     JWT_SIGNATURE_KEY
-} = 
+} = process.env
 module.exports = {
     // middleware restrict is for checking the user logged in by passing the user bearer token from into the api   
-    restrict: (req, res) => {
+    restrict: (req, res, next) => {
         try {
             const header = req.headers['authorization'];
             // split the token from the `Bearer`
@@ -21,7 +23,7 @@ module.exports = {
             req.user = payload;
 
             next();
-        } catch(err) {
+        } catch (err) {
             if (err.message == 'jwt malformed') {
                 return res.status(401).json({
                     status: false,
