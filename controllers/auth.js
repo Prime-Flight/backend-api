@@ -222,7 +222,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `${localhost}/auth/verify-user?token=${verifyToken}`
+            let link = `${localhost}/auth/verify-user?token=`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -243,6 +243,13 @@ module.exports = {
     verifyUser: async (req, res, next) => {
         try {
             const { token } = req.query;
+            if (!token) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'You are not authorized!',
+                    data: null
+                });
+            }
             const decoded = jwt.verify(token, JWT_SIGNATURE_KEY)
             const existUser = await User.findOne({ where: { email: decoded.email } })
             if (!existUser) {
@@ -261,7 +268,7 @@ module.exports = {
                 message: 'Your email is verified'
             })
         } catch (err) {
-            if (err.message = 'jwt expired') {
+            if (err.message == 'jwt expired') {
                 return res.status(400).json({
                     status: false,
                     message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
