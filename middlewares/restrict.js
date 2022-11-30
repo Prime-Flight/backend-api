@@ -9,7 +9,7 @@ module.exports = {
         try {
             const header = req.headers['authorization'];
             // check the header argument
-            if(!header) {
+            if (!header) {
                 return res.status(401).json({
                     status: false,
                     message: 'You are not authorized!',
@@ -30,7 +30,7 @@ module.exports = {
             req.user = payload;
 
             next();
-        } catch(err) {
+        } catch (err) {
             if (err.message == 'jwt malformed') {
                 return res.status(401).json({
                     status: false,
