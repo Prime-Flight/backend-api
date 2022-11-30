@@ -222,7 +222,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `${localhost}/auth/verify-user?token=`
+            let link = `${localhost}/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -258,6 +258,12 @@ module.exports = {
                     message: `Cannot Verify Because the User's email is unavailable`
                 })
             }
+            if (existUser.is_verified == true) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'You have been verified'
+                })
+            }
             const verify = await User.update({ is_verified: true }, {
                 where: {
                     email: decoded.email
@@ -269,7 +275,7 @@ module.exports = {
             })
         } catch (err) {
             if (err.message == 'jwt expired') {
-                return res.status(400).json({
+                return res.status(406).json({
                     status: false,
                     message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
                 })

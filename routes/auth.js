@@ -11,7 +11,7 @@ router.get('/whoami', controller.auth.google);
 router.get('/forgot-password', controller.auth.viewForgotPassword);
 router.post('/forgot-password', controller.auth.forgotPassword);
 router.post('/reset-password', controller.auth.resetPassword);
-router.get('/verify-user', controller.auth.verifyUser);
+router.put('/verify-user', controller.auth.verifyUser);
 router.post('/verification-email', middleware.restrict, controller.auth.sendVerifyEmail);
 
 
