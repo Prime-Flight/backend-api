@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY } = process.env;
 const googleOauth2 = require('../utils/google');
-
+const localhost = 'http://localhost:3213/api'
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -54,13 +54,13 @@ module.exports = {
                 isGoogle: false,
                 role: 2,
                 nationality,
-                isVerified: false
+                is_verified: false
             });
-            const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "60s" })
+            const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
             const link = `${localhost}/auth/verify-user?token=${verifyToken}`
 
-            const sendEmail = await lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
+            const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
             return res.status(201).json({
                 status: true,
@@ -78,7 +78,8 @@ module.exports = {
             })
 
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     login: async (req, res, next) => {
@@ -119,7 +120,8 @@ module.exports = {
                 }
             });
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     google: async (req, res, next) => {
@@ -166,7 +168,8 @@ module.exports = {
                 }
             });
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     whoami: (req, res, next) => {
@@ -200,7 +203,8 @@ module.exports = {
                 })
             }
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     resetPassword: (req, res, next) => {
@@ -213,26 +217,59 @@ module.exports = {
         try {
             const { email } = req.user;
 
-            const user = await User.findOne({ where: { email } })
             const payload = {
-                user_id: user.id
+                email
             }
-            const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "60s" })
+            const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
             let link = `${localhost}/auth/verify-user?token=${verifyToken}`
 
-            const sendEmail = await lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
+            const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
             if (sendEmail) {
                 res.status(200).json({
-                    status: true,
-                    message: 'Verification email sent successfully'
+                    status: 'PENDING',
+                    message: 'Verification Email is being sent'
                 })
             }
 
 
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
+    },
+
+    verifyUser: async (req, res, next) => {
+        try {
+            const { token } = req.query;
+            const decoded = jwt.verify(token, JWT_SIGNATURE_KEY)
+            const existUser = await User.findOne({ where: { email: decoded.email } })
+            if (!existUser) {
+                return res.status(404).json({
+                    status: false,
+                    message: `Cannot Verify Because the User's email is unavailable`
+                })
+            }
+            const verify = await User.update({ is_verified: true }, {
+                where: {
+                    email: decoded.email
+                }
+            })
+            return res.status(200).json({
+                status: true,
+                message: 'Your email is verified'
+            })
+        } catch (err) {
+            if (err.message = 'jwt expired') {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
+                })
+            }
+            // next(err);
+            console.log(err);
+        }
+
     }
 }
