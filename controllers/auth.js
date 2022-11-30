@@ -4,9 +4,8 @@ const Validator = require('fastest-validator');
 const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
-const { JWT_SIGNATURE_KEY } = process.env;
+const { JWT_SIGNATURE_KEY, HOST } = process.env;
 const googleOauth2 = require('../utils/google');
-const localhost = 'http://localhost:3213/api'
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -222,7 +221,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `${localhost}/auth/verify-user?token=${verifyToken}`
+            let link = `${HOST}/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
