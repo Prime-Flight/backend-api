@@ -1025,7 +1025,7 @@ paths:
                           "Zambia",
                           "Zimbabwe"]
 
-  /country/phone-code?country={countryName}:
+  /country/phone-code?country_name={countryName}:
     get:
       summary: Get Phone Code of the Country that has been selected from the nationality of the User, it is forwarded from the countrycode.dev 
       parameters:
@@ -1047,10 +1047,10 @@ paths:
                 Get Indonesian Country Code :
                   value:
                     status: true
-                    message: Successfully Get The Country List
+                    message: Successfully Get The Phone Code
                     data: 
                       country: Indonesia
-                      phone-code: 62
+                      phone_code: 62
         '400':
           description: Bad Request No Such Country   
           content:
