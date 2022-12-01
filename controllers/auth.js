@@ -135,17 +135,34 @@ module.exports = {
 
             // if !ada -> simpan data user
             if (!userExist) {
-                return res.status(400).json({
-                    status: false,
-                    message: 'You have registered with your email, Please login with your email instead'
+                userExist = await User.create({
+                    name: data.name,
+                    email: data.email,
+                    is_google: true
+                });
+                payload = {
+                    id: data.id,
+                    name: data.name, 
+                    email: data.email,
+                };
+                const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
+    
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully Login with Google',
+                    data: {
+                        user_id: data.id,
+                        email: data.email,
+                        token: token
+                    }
                 });
             }
 
             // generate token
             payload = {
                 id: data.id,
-                name: data.name,
-                email: data.email,
+                name: data.name, 
+                email: data.email
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
