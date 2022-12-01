@@ -1,5 +1,4 @@
 const auth = require('./auth');
-const googleOauth2 = require('../lib/google');
 module.exports = { 
     hello: (req, res, next) => {
         try {
