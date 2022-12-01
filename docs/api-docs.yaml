@@ -776,8 +776,6 @@ paths:
           description: Successfully Get The Country List   
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/User'
               examples:
                 Get Nanda Suparman with null Profile Pictures and Not Verified :
                   value:
@@ -1026,6 +1024,44 @@ paths:
                           "Yemen",
                           "Zambia",
                           "Zimbabwe"]
+
+  /country/phone-code?country_name={countryName}:
+    get:
+      summary: Get Phone Code of the Country that has been selected from the nationality of the User, it is forwarded from the countrycode.dev 
+      parameters:
+        - in: query
+          name: countryName
+          schema:
+            type: string
+          required: true
+          description: to filter the number in the country in purposes of getting the country code 
+      operationId: get-phone-code
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get Phone Code   
+          content:
+            application/json:
+              examples:
+                Get Indonesian Country Code :
+                  value:
+                    status: true
+                    message: Successfully Get The Phone Code
+                    data: 
+                      country: Indonesia
+                      phone_code: 62
+        '400':
+          description: Bad Request No Such Country   
+          content:
+            application/json:
+              examples:
+                No Such Country Exists:
+                  value:
+                    status: false
+                    message: Failed to get the Country Phone Code
+                    data: null 
+                      
 
   /user/details:
     get:
