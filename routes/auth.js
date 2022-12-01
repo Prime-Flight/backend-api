@@ -14,5 +14,4 @@ router.post('/reset-password', controller.auth.resetPassword);
 router.put('/verify-user', controller.auth.verifyUser);
 router.post('/verification-email', middleware.restrict, controller.auth.sendVerifyEmail);
 
-
 module.exports = router;

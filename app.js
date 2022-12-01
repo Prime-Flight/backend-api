@@ -48,6 +48,10 @@ app.use(function onError(err, req, res, next) {
   // and optionally displayed to the user for support.
   res.statusCode = 500;
   res.end(res.sentry + "\n");
+    res.status(500).json({
+        status: false,
+        message: err
+    });
 });
 
 app.listen(PORT, console.log(`Running on port = ${PORT}`));
