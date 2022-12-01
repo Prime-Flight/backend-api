@@ -24,6 +24,16 @@ components:
                 status: false
                 message: You are not authorized  
                 data: null
+    NoPage:
+      description: Invalid Request No Such Page
+      content:
+        application/json:
+          examples:
+            No Page Avalaible:
+              value:
+                status: false
+                message: The Page is not available  
+                data: null
   securitySchemes:
     bearerAuth:
       type: http
@@ -64,6 +74,9 @@ components:
         is_verified:
           type: boolean
           description: To check if the user is verified
+        phone_number:
+          type: string
+          description: phone number should be with the country code in the database (for example 6284433221133)
       required:
         - id
         - name
@@ -320,9 +333,13 @@ security:
 
 tags:
   - name: Auth
-    description: Api for Auth 
+    description: API for Auth 
+  - name: User Profile Details
+    description: User Details after creating the Account 
+  - name: Country   
+    description: API for Country List and Country Code from https://countrycode.dev/docs
   - name: Airport
-    description: Api for Airpot that is forwarded from the port-api.com   
+    description: API for Airpot that is forwarded from the port-api.com 
 
 paths:
   '/auth/register':
@@ -747,6 +764,396 @@ paths:
                     message: Verification Email is being sent
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /country/list:
+    get:
+      summary: Get Country List, it is forwarded from the countrycode.dev 
+      operationId: get-country-list
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get The Country List   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The Country List
+                    data:
+                      country: [
+                          "Afghanistan",
+                          "Afghanistan",
+                          "Albania",
+                          "Algeria",
+                          "American Samoa",
+                          "Andorra",
+                          "Angola",
+                          "Anguilla",
+                          "Antarctica",
+                          "Antigua and Barbuda",
+                          "Argentina",
+                          "Armenia",
+                          "Aruba",
+                          "Australia",
+                          "Austria",
+                          "Azerbaijan",
+                          "Bahamas",
+                          "Bahrain",
+                          "Bangladesh",
+                          "Barbados",
+                          "Belarus",
+                          "Belgium",
+                          "Belize",
+                          "Benin",
+                          "Bermuda",
+                          "Bhutan",
+                          "Bolivia",
+                          "Bosnia and Herzegovina",
+                          "Botswana",
+                          "Brazil",
+                          "British Indian Ocean Territory",
+                          "British Virgin Islands",
+                          "Brunei",
+                          "Bulgaria",
+                          "Burkina Faso",
+                          "Burundi",
+                          "Cambodia",
+                          "Cameroon",
+                          "Canada",
+                          "Cape Verde",
+                          "Cayman Islands",
+                          "Central African Republic",
+                          "Chad",
+                          "Chile",
+                          "China",
+                          "Christmas Island",
+                          "Cocos Islands",
+                          "Colombia",
+                          "Comoros",
+                          "Cook Islands",
+                          "Costa Rica",
+                          "Croatia",
+                          "Cuba",
+                          "Curacao",
+                          "Cyprus",
+                          "Czech Republic",
+                          "Democratic Republic of the Congo",
+                          "Denmark",
+                          "Djibouti",
+                          "Dominica",
+                          "Dominican Republic",
+                          "East Timor",
+                          "Ecuador",
+                          "Egypt",
+                          "El Salvador",
+                          "Equatorial Guinea",
+                          "Eritrea",
+                          "Estonia",
+                          "Ethiopia",
+                          "Falkland Islands",
+                          "Faroe Islands",
+                          "Fiji",
+                          "Finland",
+                          "France",
+                          "French Polynesia",
+                          "Gabon",
+                          "Gambia",
+                          "Georgia",
+                          "Germany",
+                          "Ghana",
+                          "Gibraltar",
+                          "Greece",
+                          "Greenland",
+                          "Grenada",
+                          "Guam",
+                          "Guatemala",
+                          "Guernsey",
+                          "Guinea",
+                          "Guinea-Bissau",
+                          "Guyana",
+                          "Haiti",
+                          "Honduras",
+                          "Hong Kong",
+                          "Hungary",
+                          "Iceland",
+                          "India",
+                          "Indonesia",
+                          "Iran",
+                          "Iraq",
+                          "Ireland",
+                          "Isle of Man",
+                          "Israel",
+                          "Italy",
+                          "Ivory Coast",
+                          "Jamaica",
+                          "Japan",
+                          "Jersey",
+                          "Jordan",
+                          "Kazakhstan",
+                          "Kenya",
+                          "Kiribati",
+                          "Kosovo",
+                          "Kuwait",
+                          "Kyrgyzstan",
+                          "Laos",
+                          "Latvia",
+                          "Lebanon",
+                          "Lesotho",
+                          "Liberia",
+                          "Libya",
+                          "Liechtenstein",
+                          "Lithuania",
+                          "Luxembourg",
+                          "Macau",
+                          "Macedonia",
+                          "Madagascar",
+                          "Malawi",
+                          "Malaysia",
+                          "Maldives",
+                          "Mali",
+                          "Malta",
+                          "Marshall Islands",
+                          "Mauritania",
+                          "Mauritius",
+                          "Mayotte",
+                          "Mexico",
+                          "Micronesia",
+                          "Moldova",
+                          "Monaco",
+                          "Mongolia",
+                          "Montenegro",
+                          "Montserrat",
+                          "Morocco",
+                          "Mozambique",
+                          "Myanmar",
+                          "Namibia",
+                          "Nauru",
+                          "Nepal",
+                          "Netherlands",
+                          "Netherlands Antilles",
+                          "New Caledonia",
+                          "New Zealand",
+                          "Nicaragua",
+                          "Niger",
+                          "Nigeria",
+                          "Niue",
+                          "North Korea",
+                          "Northern Mariana Islands",
+                          "Norway",
+                          "Oman",
+                          "Pakistan",
+                          "Palau",
+                          "Palestine",
+                          "Panama",
+                          "Papua New Guinea",
+                          "Paraguay",
+                          "Peru",
+                          "Philippines",
+                          "Pitcairn",
+                          "Poland",
+                          "Portugal",
+                          "Puerto Rico",
+                          "Qatar",
+                          "Republic of the Congo",
+                          "Reunion",
+                          "Romania",
+                          "Russia",
+                          "Rwanda",
+                          "Saint Barthelemy",
+                          "Saint Helena",
+                          "Saint Kitts and Nevis",
+                          "Saint Lucia",
+                          "Saint Martin",
+                          "Saint Pierre and Miquelon",
+                          "Saint Vincent and the Grenadines",
+                          "Samoa",
+                          "San Marino",
+                          "Sao Tome and Principe",
+                          "Saudi Arabia",
+                          "Senegal",
+                          "Serbia",
+                          "Seychelles",
+                          "Sierra Leone",
+                          "Singapore",
+                          "Sint Maarten",
+                          "Slovakia",
+                          "Slovenia",
+                          "Solomon Islands",
+                          "Somalia",
+                          "South Africa",
+                          "South Korea",
+                          "South Sudan",
+                          "Spain",
+                          "Sri Lanka",
+                          "Sudan",
+                          "Suriname",
+                          "Svalbard and Jan Mayen",
+                          "Swaziland",
+                          "Sweden",
+                          "Switzerland",
+                          "Syria",
+                          "Taiwan",
+                          "Tajikistan",
+                          "Tanzania",
+                          "Thailand",
+                          "Togo",
+                          "Tokelau",
+                          "Tonga",
+                          "Trinidad and Tobago",
+                          "Tunisia",
+                          "Turkey",
+                          "Turkmenistan",
+                          "Turks and Caicos Islands",
+                          "Tuvalu",
+                          "U.S. Virgin Islands",
+                          "Uganda",
+                          "Ukraine",
+                          "United Arab Emirates",
+                          "United Kingdom",
+                          "United States",
+                          "Uruguay",
+                          "Uzbekistan",
+                          "Vanuatu",
+                          "Vatican",
+                          "Venezuela",
+                          "Vietnam",
+                          "Wallis and Futuna",
+                          "Western Sahara",
+                          "Yemen",
+                          "Zambia",
+                          "Zimbabwe"]
+
+  /user/details:
+    get:
+      summary: Get User Details in from the database 
+      operationId: get-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User Profile Details 
+      responses:
+        '200':
+          description: Successfully Get The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 0
+                      phone_number: 6288844443322
+                Get Nanda Suparman with Profile Picture and Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: https://imagekit.io/321dcdse/2022_19_mypic.png
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 1
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide User Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /user/update-details:
+    put:
+      summary: Update User Details to the database 
+      operationId: get-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User Profile Details 
+      responses:
+        '200':
+          description: Successfully Update The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Update Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Update The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 0
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: body of the name if the user want to update the name   
+                url_profile_picture:  
+                  type: string
+                  description: Update the Profile Picture  
+                nationality: 
+                  type: string
+                  description: Update the Nationality  
+                phone_number:
+                  type: string
+                  description: Update the Phone Number  
+              required:
+                - name
+                - url_profile_picture
+                - nationality
+                - phone_number
+            examples:
+              Send Update Value without profile picture:
+                value:
+                  name: Nanda Suparman
+                  url_profile_picture: null 
+                  nationality: Indonesia
+                  phone_number: 6288844443322
 
   /airport/code:
     get:
