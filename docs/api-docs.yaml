@@ -24,6 +24,16 @@ components:
                 status: false
                 message: You are not authorized  
                 data: null
+    NoPage:
+      description: Invalid Request No Such Page
+      content:
+        application/json:
+          examples:
+            No Page Avalaible:
+              value:
+                status: false
+                message: The Page is not available  
+                data: null
   securitySchemes:
     bearerAuth:
       type: http
@@ -61,6 +71,12 @@ components:
         nationality:
           type: string
           description: Nationality to determine the booking input for passport or country identifier (KTP)  
+        is_verified:
+          type: boolean
+          description: To check if the user is verified
+        phone_number:
+          type: string
+          description: phone number should be with the country code in the database (for example 6284433221133)
       required:
         - id
         - name
@@ -69,6 +85,7 @@ components:
         - is_google
         - role
         - nationality
+        - is_verified
     Role:
       title: Role
       type: object
@@ -76,27 +93,253 @@ components:
       properties:
         id:
           type: integer 
-          description: Unique Identifier for User
+          description: Unique Identifier for Role
         name:
           type: string
-        read:
-          type: boolean
-          description: Read Permission of a function and data 
-        write:
-          type: boolean
-          description: Write Permission of a function and data 
+          description: Name of the Role for example = Admin 
       required:
         - id
         - name
+    Module:
+      title: Module
+      type: object
+      description: 'Module is for checking what module we are in'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Module
+        name:
+          type: string
+          description: Name of the Module for example = User Dashboard 
+      required:
+        - id
+        - name
+    Access:
+      title: Access
+      type: object
+      description: 'Access is for granting the user permission for using the Module'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        role_id:
+          type: integer 
+          description: Foreign key of Role Id
+        module_id:
+          type: integer 
+          description: Foreign key of Module Id
+        read:
+          type: boolean
+          description: Read Permission of a module and data 
+        write:
+          type: boolean
+          description: Write Permission of a module and data 
+      required:
+        - id
+        - role_id
+        - module_id
         - read
         - write
+    Transaction:
+      title: Transaction
+      type: object
+      description: 'Transaction that the User Do with the Application from the Booking'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Transaction
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking
+        total_price:
+          type: float 
+          description: Total of the Transaction Price
+        status:
+          type: enum
+          description: Status consist of ("Rejected", "Pending", "Success") 
+      required:
+        - id
+        - booking_id
+        - total_price
+        - status
+    Flight:
+      title: Flight
+      type: object
+      description: 'The Flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Flight
+        airport:
+          type: string 
+          description: Location for the Airport
+        flight_date:
+          type: date 
+          description: Date of the Airport
+      required:
+        - id
+        - airport
+        - flight_date
+    Booking:
+      title: Booking
+      type: object
+      description: 'The Booking User did in the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Booking
+        destination:
+          type: integer 
+          description: Foreign key of Flight Model
+        user:
+          type: integer 
+          description: Foreign key of User Id
+        seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+        kode_booking:
+          type: string
+          description: Booking Code By Using the IATA and Numbers  
+      required:
+        - id
+        - destination
+        - user
+        - seat
+        - kode_booking
+    BookingDetail:
+      title: BookingDetail
+      type: object
+      description: 'The Booking Detail for the document and flight code'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for BookingDetail
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking Model
+        document_url:
+          type: string 
+          description: url for the booking detail for user after payment the transaction that the ticket will be generated to redeem a boarding pass 
+        kode_penerbangan:
+          type: string 
+          description: the flight code 
+        price_per_seat:
+          type: float 
+          description: the price for transaction total which is the gonna be the price for a seat  
+      required:
+        - id
+        - booking_id
+        - document_url
+        - kode_penerbangan
+        - price_per_seat
+        - seat_number
+    Buyer:
+      title: Buyer
+      type: object
+      description: 'The Buyer is not the User that login, it consist the information for the User that responsible for the booking of the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Buyer
+        booking_detail_id:
+          type: integer 
+          description: Foreign key of Booking Detail
+        user_id:
+          type: integer 
+          description: Foreign key of User Id
+        total_seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+      required:
+        - id
+        - destination
+        - user
+        - seat
+    Passenger:
+      title: Passenger
+      type: object
+      description: 'Passenger is the information of the consumer that will redeem the ticket'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Passenger
+        buyer_id:
+          type: integer 
+          description: Foreign key of buyer
+        name:
+          type: string 
+          description: Foreign key of User Id
+        passenger_category:
+          type: enum 
+          description: Passenger Category uses ('child', 'adult') 
+        nik:
+          type: string
+          description: the ID of the passenger for adult 
+        passport_number:
+          type: string
+          description: the passport_number of the passenger for adult 
+        passenger_detail:
+          type: integer
+          description: foreign key of passpor detail 
+      required:
+        - id
+        - buyer_id
+        - name
+        - passenger_category
+        - passenger_detail
+    PassengerDetail:
+      title: PassengerDetail
+      type: object
+      description: 'PassengerDetail is the detail information such as passenger sensitive id on NIK or Passport'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for PassengerDetail
+        nik:
+          type: string
+          description: the ID number of the passenger for adult 
+        passport_number:
+          type: string
+          description: the passport number of the passenger for adult and foreign
+        gender:
+          type: enum
+          description: enum value "Male" and "Female"
+      required:
+        - id
+        - nik
+        - passport_number
+        - gender
+    SeatNumber:
+      title: SeatNumber
+      type: object
+      description: 'SeatNumber is the information for Passenger Seat Number'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for SeatNumber
+        booking_detail_id:
+          type: integer
+          description: Foreign key of BookingDetail Model 
+        passenger_id:
+          type: integer
+          description: Foreign key of Passenger Model 
+      required:
+        - id
+        - booking_detail_id
+        - passenger_id
 
 security:
   - bearerAuth: []
 
 tags:
   - name: Auth
-    description: Api for Auth 
+    description: API for Auth 
+  - name: User Profile Details
+    description: User Details after creating the Account 
+  - name: Country   
+    description: API for Country List and Country Code from https://countrycode.dev/docs
+  - name: Airport
+    description: API for Airpot that is forwarded from the port-api.com 
 
 paths:
   '/auth/register':
@@ -126,6 +369,7 @@ paths:
                       isGoogle: false
                       role: 2
                       nationality: Indonesian
+                      is_verified: false
         '400':
           description: Missing Detail Information
           content:
@@ -440,8 +684,8 @@ paths:
     description: Find and reset password account according to the user request
 
   /auth/verify-user:
-    post:
-      summary: Verify User Using Email by Searching The Current User Logged In (whoami)
+    put:
+      summary: Verify User Using Email by Searching The Current User Logged In and change the value in the database for user `is_verified` to true 
       operationId: post-auth-verify-user
       security: 
         - bearerAuth: []
@@ -455,15 +699,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
               examples:
-                Successfully Send Email verify for Nanda:
+                Message for Success Verified:
                   value:
                     status: true
-                    message: Successfully Send Verify Token
-                    data:
-                      email: nandasuparman@gmail.com
-                      token: <JWTToken>
+                    message: Your email is verified 
         '400':
-          description: Bad Request No Email Registered, Verify User Email
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message User Already Verified:
+                  value:
+                    status: false
+                    message: You have been verified
+                    data: null
+        '404':
+          description: Can't verify null data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message No User Email :
+                  value:
+                    status: false
+                    message: Cannot Verify Because the User's email is unavailable
+                    data: null
+        '406':
+          description: Expired Token
           content:
             application/json:
               schema:
@@ -472,8 +737,520 @@ paths:
                 Message Cannot Verify:
                   value:
                     status: false
-                    message: Cannot Verify Because User is the email is unavailable  
+                    message: Your verification link is expired. Please click the resend email verification button on your profile page  
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/verification-email:
+    post:
+      summary: Send Email by Searching The Current User Logged In (whoami)
+      operationId: send-verification-email
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: Status for Email Verification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Email Successfuly Send :
+                  value:
+                    status: PENDING
+                    message: Verification Email is being sent
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /country/list:
+    get:
+      summary: Get Country List, it is forwarded from the countrycode.dev 
+      operationId: get-country-list
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get The Country List   
+          content:
+            application/json:
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The Country List
+                    data:
+                      country: [
+                          "Afghanistan",
+                          "Afghanistan",
+                          "Albania",
+                          "Algeria",
+                          "American Samoa",
+                          "Andorra",
+                          "Angola",
+                          "Anguilla",
+                          "Antarctica",
+                          "Antigua and Barbuda",
+                          "Argentina",
+                          "Armenia",
+                          "Aruba",
+                          "Australia",
+                          "Austria",
+                          "Azerbaijan",
+                          "Bahamas",
+                          "Bahrain",
+                          "Bangladesh",
+                          "Barbados",
+                          "Belarus",
+                          "Belgium",
+                          "Belize",
+                          "Benin",
+                          "Bermuda",
+                          "Bhutan",
+                          "Bolivia",
+                          "Bosnia and Herzegovina",
+                          "Botswana",
+                          "Brazil",
+                          "British Indian Ocean Territory",
+                          "British Virgin Islands",
+                          "Brunei",
+                          "Bulgaria",
+                          "Burkina Faso",
+                          "Burundi",
+                          "Cambodia",
+                          "Cameroon",
+                          "Canada",
+                          "Cape Verde",
+                          "Cayman Islands",
+                          "Central African Republic",
+                          "Chad",
+                          "Chile",
+                          "China",
+                          "Christmas Island",
+                          "Cocos Islands",
+                          "Colombia",
+                          "Comoros",
+                          "Cook Islands",
+                          "Costa Rica",
+                          "Croatia",
+                          "Cuba",
+                          "Curacao",
+                          "Cyprus",
+                          "Czech Republic",
+                          "Democratic Republic of the Congo",
+                          "Denmark",
+                          "Djibouti",
+                          "Dominica",
+                          "Dominican Republic",
+                          "East Timor",
+                          "Ecuador",
+                          "Egypt",
+                          "El Salvador",
+                          "Equatorial Guinea",
+                          "Eritrea",
+                          "Estonia",
+                          "Ethiopia",
+                          "Falkland Islands",
+                          "Faroe Islands",
+                          "Fiji",
+                          "Finland",
+                          "France",
+                          "French Polynesia",
+                          "Gabon",
+                          "Gambia",
+                          "Georgia",
+                          "Germany",
+                          "Ghana",
+                          "Gibraltar",
+                          "Greece",
+                          "Greenland",
+                          "Grenada",
+                          "Guam",
+                          "Guatemala",
+                          "Guernsey",
+                          "Guinea",
+                          "Guinea-Bissau",
+                          "Guyana",
+                          "Haiti",
+                          "Honduras",
+                          "Hong Kong",
+                          "Hungary",
+                          "Iceland",
+                          "India",
+                          "Indonesia",
+                          "Iran",
+                          "Iraq",
+                          "Ireland",
+                          "Isle of Man",
+                          "Israel",
+                          "Italy",
+                          "Ivory Coast",
+                          "Jamaica",
+                          "Japan",
+                          "Jersey",
+                          "Jordan",
+                          "Kazakhstan",
+                          "Kenya",
+                          "Kiribati",
+                          "Kosovo",
+                          "Kuwait",
+                          "Kyrgyzstan",
+                          "Laos",
+                          "Latvia",
+                          "Lebanon",
+                          "Lesotho",
+                          "Liberia",
+                          "Libya",
+                          "Liechtenstein",
+                          "Lithuania",
+                          "Luxembourg",
+                          "Macau",
+                          "Macedonia",
+                          "Madagascar",
+                          "Malawi",
+                          "Malaysia",
+                          "Maldives",
+                          "Mali",
+                          "Malta",
+                          "Marshall Islands",
+                          "Mauritania",
+                          "Mauritius",
+                          "Mayotte",
+                          "Mexico",
+                          "Micronesia",
+                          "Moldova",
+                          "Monaco",
+                          "Mongolia",
+                          "Montenegro",
+                          "Montserrat",
+                          "Morocco",
+                          "Mozambique",
+                          "Myanmar",
+                          "Namibia",
+                          "Nauru",
+                          "Nepal",
+                          "Netherlands",
+                          "Netherlands Antilles",
+                          "New Caledonia",
+                          "New Zealand",
+                          "Nicaragua",
+                          "Niger",
+                          "Nigeria",
+                          "Niue",
+                          "North Korea",
+                          "Northern Mariana Islands",
+                          "Norway",
+                          "Oman",
+                          "Pakistan",
+                          "Palau",
+                          "Palestine",
+                          "Panama",
+                          "Papua New Guinea",
+                          "Paraguay",
+                          "Peru",
+                          "Philippines",
+                          "Pitcairn",
+                          "Poland",
+                          "Portugal",
+                          "Puerto Rico",
+                          "Qatar",
+                          "Republic of the Congo",
+                          "Reunion",
+                          "Romania",
+                          "Russia",
+                          "Rwanda",
+                          "Saint Barthelemy",
+                          "Saint Helena",
+                          "Saint Kitts and Nevis",
+                          "Saint Lucia",
+                          "Saint Martin",
+                          "Saint Pierre and Miquelon",
+                          "Saint Vincent and the Grenadines",
+                          "Samoa",
+                          "San Marino",
+                          "Sao Tome and Principe",
+                          "Saudi Arabia",
+                          "Senegal",
+                          "Serbia",
+                          "Seychelles",
+                          "Sierra Leone",
+                          "Singapore",
+                          "Sint Maarten",
+                          "Slovakia",
+                          "Slovenia",
+                          "Solomon Islands",
+                          "Somalia",
+                          "South Africa",
+                          "South Korea",
+                          "South Sudan",
+                          "Spain",
+                          "Sri Lanka",
+                          "Sudan",
+                          "Suriname",
+                          "Svalbard and Jan Mayen",
+                          "Swaziland",
+                          "Sweden",
+                          "Switzerland",
+                          "Syria",
+                          "Taiwan",
+                          "Tajikistan",
+                          "Tanzania",
+                          "Thailand",
+                          "Togo",
+                          "Tokelau",
+                          "Tonga",
+                          "Trinidad and Tobago",
+                          "Tunisia",
+                          "Turkey",
+                          "Turkmenistan",
+                          "Turks and Caicos Islands",
+                          "Tuvalu",
+                          "U.S. Virgin Islands",
+                          "Uganda",
+                          "Ukraine",
+                          "United Arab Emirates",
+                          "United Kingdom",
+                          "United States",
+                          "Uruguay",
+                          "Uzbekistan",
+                          "Vanuatu",
+                          "Vatican",
+                          "Venezuela",
+                          "Vietnam",
+                          "Wallis and Futuna",
+                          "Western Sahara",
+                          "Yemen",
+                          "Zambia",
+                          "Zimbabwe"]
+
+  /country/phone-code?country_name={countryName}:
+    get:
+      summary: Get Phone Code of the Country that has been selected from the nationality of the User, it is forwarded from the countrycode.dev 
+      parameters:
+        - in: query
+          name: countryName
+          schema:
+            type: string
+          required: true
+          description: to filter the number in the country in purposes of getting the country code 
+      operationId: get-phone-code
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get Phone Code   
+          content:
+            application/json:
+              examples:
+                Get Indonesian Country Code :
+                  value:
+                    status: true
+                    message: Successfully Get The Phone Code
+                    data: 
+                      country: Indonesia
+                      phone_code: 62
+        '400':
+          description: Bad Request No Such Country   
+          content:
+            application/json:
+              examples:
+                No Such Country Exists:
+                  value:
+                    status: false
+                    message: Failed to get the Country Phone Code
+                    data: null 
+                      
+
+  /user/details:
+    get:
+      summary: Get User Details in from the database 
+      operationId: get-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User Profile Details 
+      responses:
+        '200':
+          description: Successfully Get The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 0
+                      phone_number: 6288844443322
+                Get Nanda Suparman with Profile Picture and Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: https://imagekit.io/321dcdse/2022_19_mypic.png
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 1
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide User Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /user/update-details:
+    put:
+      summary: Update User Details to the database 
+      operationId: get-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User Profile Details 
+      responses:
+        '200':
+          description: Successfully Update The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Update Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Update The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 0
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: body of the name if the user want to update the name   
+                url_profile_picture:  
+                  type: string
+                  description: Update the Profile Picture  
+                nationality: 
+                  type: string
+                  description: Update the Nationality  
+                phone_number:
+                  type: string
+                  description: Update the Phone Number  
+              required:
+                - name
+                - url_profile_picture
+                - nationality
+                - phone_number
+            examples:
+              Send Update Value without profile picture:
+                value:
+                  name: Nanda Suparman
+                  url_profile_picture: null 
+                  nationality: Indonesia
+                  phone_number: 6288844443322
+
+  /airport/code:
+    get:
+      summary: Get Airport by providing either the IATA code or the ICAO code
+      operationId: get-airport-get-by-code
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Airport
+      responses:
+        '200':
+          description: Successfully get the airport by the code   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Get Airport Soekarno Hatta By Code:
+                  value:
+                    status: true
+                    message: Successfully get airport by Code
+                    data:
+                      name: Soekarno-Hatta International Airport
+                      type: large_airport
+                      location: 
+                        location_code: ID-BT
+                        region : Banten
+                        country: Indonesia
+                        continent: Asia
+                      code:
+                        iata: CGK
+                        icao: WIII
+        '400':
+          description: Bad Request No Such Airports
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot provide airport information because it is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: 
+                  type: string
+                  description: We can request by getting the aiport by usig the code 
+              required:
+                - code
+            examples:
+              Send Code of Soekarno Hatta Cengkareng:
+                value:
+                  code: cgk
+      decription: Get the airport by using the IATA code in Airport 
+    description: Get the airport information by using the IATA code or ICAO code  
 

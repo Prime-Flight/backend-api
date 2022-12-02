@@ -4,9 +4,8 @@ const Validator = require('fastest-validator');
 const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
-const { JWT_SIGNATURE_KEY } = process.env;
+const { JWT_SIGNATURE_KEY, HOST } = process.env;
 const googleOauth2 = require('../utils/google');
-
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -34,6 +33,13 @@ module.exports = {
                 });
             }
 
+            //untuk testing. Menghapus user jika sudah pernah mendaftar
+            await User.destroy({
+                where: {
+                    email
+                }
+            })
+
             const existUser = await User.findOne({ where: { email } });
             if (existUser) {
                 return res.status(409).json({
@@ -53,8 +59,14 @@ module.exports = {
                 gender,
                 isGoogle: false,
                 role: 2,
-                nationality
+                nationality,
+                is_verified: false
             });
+            const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
+
+            const link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
+
+            const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
             return res.status(201).json({
                 status: true,
@@ -72,7 +84,8 @@ module.exports = {
             })
 
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     login: async (req, res, next) => {
@@ -100,6 +113,7 @@ module.exports = {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
@@ -112,13 +126,14 @@ module.exports = {
                 }
             });
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     google: async (req, res, next) => {
         try {
             const code = req.query.code;
-            if(!code) {
+            if (!code) {
                 const url = googleOauth2.generateAuthURL();
 
                 return res.redirect(url);
@@ -126,7 +141,7 @@ module.exports = {
 
             // get token
             await googleOauth2.setCredentials(code);
-            
+
             // get data user
             const { data } = await googleOauth2.getUserData();
 
@@ -176,7 +191,8 @@ module.exports = {
                 }
             });
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     whoami: (req, res, next) => {
@@ -199,8 +215,7 @@ module.exports = {
             if (existUser) {
                 const payload = { user_id: existUser.id }
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
-                const link = `http://localhost:3213/auth/reset-password?token=${token}`
-
+                const link = `${localhost}/auth/reset-password?token=${token}`
                 emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: existUser.name, link: link })
 
                 await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
@@ -211,7 +226,8 @@ module.exports = {
                 })
             }
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
     },
     resetPassword: (req, res, next) => {
@@ -220,10 +236,76 @@ module.exports = {
             next(err);
         }
     },
-    verifyUser: (req, res, next) => {
+    sendVerifyEmail: async (req, res, next) => {
         try {
+            const { email } = req.user;
+
+            const payload = {
+                email
+            }
+            const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
+
+            let link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
+
+            const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
+
+            if (sendEmail) {
+                res.status(200).json({
+                    status: 'PENDING',
+                    message: 'Verification Email is being sent'
+                })
+            }
+
+
         } catch (err) {
-            next(err);
+            // next(err);
+            console.log(err);
         }
+    },
+
+    verifyUser: async (req, res, next) => {
+        try {
+            const { token } = req.query;
+            if (!token) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'You are not authorized!',
+                    data: null
+                });
+            }
+            const decoded = jwt.verify(token, JWT_SIGNATURE_KEY)
+            const existUser = await User.findOne({ where: { email: decoded.email } })
+            if (!existUser) {
+                return res.status(404).json({
+                    status: false,
+                    message: `Cannot Verify Because the User's email is unavailable`
+                })
+            }
+            if (existUser.is_verified == true) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'You have been verified'
+                })
+            }
+            const verify = await User.update({ is_verified: true }, {
+                where: {
+                    email: decoded.email
+                }
+            })
+            return res.status(200).json({
+                status: true,
+                message: 'Your email is verified'
+            })
+        } catch (err) {
+            if (err.message == 'jwt expired') {
+                return res.status(406).json({
+                    status: false,
+                    message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
+                })
+            }
+            // next(err);
+            console.log(err);
+        }
+
     }
 }

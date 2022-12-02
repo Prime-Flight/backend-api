@@ -10,6 +10,7 @@
   "dependencies": {
     "@sentry/node": "^7.21.1",
     "@sentry/tracing": "^7.21.1",
+    "abort-controller": "^3.0.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
@@ -22,6 +23,7 @@
     "method-override": "^3.0.0",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
+    "node-fetch": "^2.6.1",
     "nodemailer": "^6.8.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",

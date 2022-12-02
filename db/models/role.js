@@ -15,8 +15,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   Role.init({
     name: DataTypes.STRING,
-    read: DataTypes.BOOLEAN,
-    write: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Role',

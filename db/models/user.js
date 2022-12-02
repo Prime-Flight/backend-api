@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
     gender: DataTypes.ENUM('Male', 'Female'),
     is_google: DataTypes.BOOLEAN,
     role: DataTypes.INTEGER,
-    nationality: DataTypes.STRING
+    nationality: DataTypes.STRING,
+    is_verified: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'User',

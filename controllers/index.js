@@ -1,5 +1,5 @@
 const auth = require('./auth');
-const googleOauth2 = require('../lib/google');
+const country = require('./country');
 module.exports = { 
     hello: (req, res, next) => {
         try {
@@ -13,5 +13,5 @@ module.exports = {
         }
     },
     
-    auth
+    auth, country
 }
