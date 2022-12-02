@@ -32,14 +32,14 @@ module.exports = {
                     data: null
                 });
             }
-            
-              //untuk testing. Menghapus user jika sudah pernah mendaftar
+
+            //untuk testing. Menghapus user jika sudah pernah mendaftar
             await User.destroy({
                 where: {
                     email
                 }
             })
-            
+
             const existUser = await User.findOne({ where: { email } });
             if (existUser) {
                 return res.status(409).json({
@@ -48,7 +48,7 @@ module.exports = {
                     data: null
                 });
             };
-           
+
             const hashedPassword = await bcrypt.hash(password, 10);
 
             const addUser = await User.create({
@@ -64,7 +64,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `${localhost}/auth/verify-user?token=${verifyToken}`
+            const link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -228,7 +228,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `${HOST}/auth/verify-user?token=${verifyToken}`
+            let link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
