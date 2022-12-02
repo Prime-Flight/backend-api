@@ -33,6 +33,13 @@ module.exports = {
                 });
             }
             
+              //untuk testing. Menghapus user jika sudah pernah mendaftar
+            await User.destroy({
+                where: {
+                    email
+                }
+            })
+            
             const existUser = await User.findOne({ where: { email } });
             if (existUser) {
                 return res.status(409).json({
@@ -41,14 +48,7 @@ module.exports = {
                     data: null
                 });
             };
-
-            //untuk testing. Menghapus user jika sudah pernah mendaftar
-            await User.destroy({
-                where: {
-                    email
-                }
-            })
-            
+           
             const hashedPassword = await bcrypt.hash(password, 10);
 
             const addUser = await User.create({
