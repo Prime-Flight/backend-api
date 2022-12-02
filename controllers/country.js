@@ -36,6 +36,7 @@ module.exports = {
             const filteredPhoneCode = data.filter(code => {
                 let isValid = true;
                 for (key in country_name) {
+                    if( isValid   )
                     isValid = isValid && code[key] == country_name[key];
                 }
                 return isValid;
@@ -49,12 +50,14 @@ module.exports = {
                 }
             });
         } catch (err) {
-            if (err instanceof AbortError) {
-                return res.status(500).json({
-                    status: false,
-                    message: "request was aborted",
-                    data: null
-                });
+            if (typeof(err) == Object) { 
+                if (err instanceof AbortError) {
+                    return res.status(500).json({
+                        status: false,
+                        message: "request was aborted",
+                        data: null
+                    });
+                }
             }
             next(err)
             throw new Error(err);
