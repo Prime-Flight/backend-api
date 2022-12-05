@@ -339,7 +339,11 @@ tags:
   - name: Country   
     description: API for Country List and Country Code from https://countrycode.dev/docs
   - name: Airport
-    description: API for Airpot that is forwarded from the port-api.com 
+    description: API for Airport that is forwarded from the port-api.com 
+  - name: Booking
+    description: API for CRUD Booking.  
+  - name: Admin
+    description: API for Admin CRUD for the whole program.  
 
 paths:
   '/auth/register':
@@ -1121,7 +1125,7 @@ paths:
   /user/update-details:
     put:
       summary: Update User Details to the database 
-      operationId: get-user-details
+      operationId: update-user-details
       security: 
         - bearerAuth: []
       tags: 
@@ -1191,6 +1195,56 @@ paths:
                   nationality: Indonesia
                   phone_number: 6288844443322
 
+  /user/delete-details:
+    delete:
+      summary: Only Admin can Delete the User Details  
+      operationId: delete-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin 
+      responses:
+        '200':
+          description: Successfully Delete The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Delete Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Delete The User Details
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                  description: admin can delete user account by finding the email.
+              required:
+                - email
+            examples:
+              Delete User Nanda Permana:
+                value:
+                  email: nandapermana@gmail.com 
+
   /airport/code:
     get:
       summary: Get Airport by providing either the IATA code or the ICAO code
@@ -1251,6 +1305,170 @@ paths:
               Send Code of Soekarno Hatta Cengkareng:
                 value:
                   code: cgk
-      decription: Get the airport by using the IATA code in Airport 
-    description: Get the airport information by using the IATA code or ICAO code  
 
+  /airport/search:
+    get:
+      summary: Get Airport by searching the name of the airport.
+      operationId: get-airport-get-by-name
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Airport
+      responses:
+        '200':
+          description: Successfully get the airport by the name   
+          content:
+            application/json:
+              examples:
+                Successfully Get Airport Soekarno Hatta By Name:
+                  value:
+                    status: true
+                    message: Successfully get airport information 
+                    data:
+                      name: Ngurah Rai (Bali) International Airport
+                      type: large_airport
+                      location: 
+                        location_code: ID-BA
+                        region : Denpasar
+                        country: Indonesia
+                        continent: Asia
+                      code:
+                        iata: DPS
+                        icao: WADD
+        '400':
+          description: Bad Request No Such Airports
+          content:
+            application/json:
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot provide airport information because it is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: 
+                  type: string
+                  description: We can request by getting the aiport by usig the code 
+              required:
+                - code
+            examples:
+              Send Search Value:
+                value:
+                  search_name: ngurah 
+
+  /flight/create-flight-schedule:
+    post:
+      summary: Admin Can Create Flight, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-create-flight
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin
+      responses:
+        '200':
+          description: Create Flight Schedule
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Get Airport Soekarno Hatta By Name:
+                  value:
+                    status: true
+                    message: Successfully Create Flight Schedule to Order 
+                    data:
+                      id: 1
+                      airport: Ngurah Rai (Bali) International Airport
+                      flight_date: "2022-09-10 08:00:00" 
+        '400':
+          description: Bad Request Cannot Create the Flight Schedule
+          content:
+            application/json:
+              examples:
+                Cannot Create the Flight Schedule:
+                  value:
+                    status: false
+                    message: Cannot Create the Flight Schedule -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: 
+                  type: string
+                  description: We can request by getting the aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+            examples:
+              Send Search Value:
+                value:
+                  search_name: ngurah 
+                  code: DPS 
+
+  /booking/order:
+    post:
+      summary: User Can Create Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-create-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Booking
+      responses:
+        '200':
+          description: Successfully Create Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Book the Flight:
+                  value:
+                    status: true
+                    message: Successfully Create Booking 
+                    data:
+                      name: Ngurah Rai (Bali) International Airport
+                      type: large_airport
+                      location: 
+                        location_code: ID-BA
+                        region : Denpasar
+                        country: Indonesia
+                        continent: Asia
+                      code:
+                        iata: DPS
+                        icao: WADD
+        '400':
+          description: Bad Request No Such Airports
+          content:
+            application/json:
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot provide airport information because it is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: 
+                  type: string
+                  description: We can request by getting the aiport by usig the code 
+              required:
+                - code
+            examples:
+              Send Search Value:
+                value:
+                  code: ngurah 
