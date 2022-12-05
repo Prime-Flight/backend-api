@@ -156,7 +156,13 @@ components:
           description: Total of the Transaction Price
         status:
           type: enum
-          description: Status consist of ("Rejected", "Pending", "Success") 
+          description: Status consist of ("Rejected", "Canceled", "Pending", "Success") 
+        user_cancel_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+        user_reject_reason:
+          type: text
+          description: the reason why user cancel the transaction 
       required:
         - id
         - booking_id
@@ -170,31 +176,36 @@ components:
         id:
           type: integer 
           description: Unique Identifier for Flight
-        iata_code:
-          type: string
-          description: Unique Identifier for Airport using IATA
-        icao_code:
-          type: string
-          description: Unique Identifier for Airport using ICAO
-        kode_penerbangan:
+        flight_code:
           type: string 
           description: the flight code
-        airport_destination:
-          type: string 
-          description: Location for the Airport
-        region_destination:
-          type: string 
-          description: Region Location for the Airport
-        country_destination:
-          type: string 
-          description: Country Location for the Airport
-        flight_date:
+        departure_iata_code:
+          type: string
+          description: Unique Identifier for Airport using IATA for Airport Departure
+        deparutre_icao_code:
+          type: string
+          description: Unique Identifier for Airport using ICAO for Airport Departure
+        departure_time:
           type: date 
-          description: Date of the Airport
+          description: Date and Time of the Flight Departure
+        arrival_iata_code:
+          type: string
+          description: Unique Identifier for Airport using IATA for Airport Arrival
+        arrival_icao_code:
+          type: string
+          description: Unique Identifier for Airport using ICAO for Airport Arrival
+        arrival_time:
+          type: date 
+          description: Date and Time of the Flight Arrival
       required:
         - id
-        - airport
-        - flight_date
+        - flight_code
+        - departure_iata_code
+        - departure_icao_code
+        - departure_time
+        - arrival_iata_code
+        - arrival_icao_code
+        - arrival_time
     Booking:
       title: Booking
       type: object
@@ -212,15 +223,19 @@ components:
         seat:
           type: integer 
           description: Number Of Seat that user Book for example = 3 seat
-        kode_booking:
+        status:
+          type: enum
+          description: Status consist of ("Rejected", "Canceled", "Pending", "Success") 
+        booking_code:
           type: string
-          description: Booking Code By Using the IATA and Numbers  
+          description: Booking Code By Using the IATA departure - IATA Arrival and Plane Code  
       required:
         - id
         - destination
         - user
         - seat
-        - kode_booking
+        - booking_code
+        - status
     BookingDetail:
       title: BookingDetail
       type: object
@@ -238,11 +253,17 @@ components:
         price_per_seat:
           type: float 
           description: the price for transaction total which is the gonna be the price for a seat  
+        user_cancel_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+        admin_reject_reason:
+          type: text
+          description: the reason why user cancel the transaction 
       required:
         - id
         - booking_id
         - document_url
-        - kode_penerbangan
+        - flight_code
         - price_per_seat
         - seat_number
     Buyer:
@@ -340,18 +361,20 @@ security:
 tags:
   - name: Auth
     description: API for Auth 
-  - name: User Profile Details
-    description: User Details after creating the Account 
-  - name: Passenger Data
-    description: User can add passenger data to ease the booking order  
   - name: Country   
     description: API for Country List and Country Code from https://countrycode.dev/docs
   - name: Airport
     description: API for Airport that is forwarded from the port-api.com 
-  - name: Booking
-    description: API for CRUD Booking.  
-  - name: Admin
-    description: API for Admin CRUD for the whole program.  
+  - name: User - Profile Details
+    description: User Details after creating the Account 
+  - name: User - Passenger Data
+    description: User can add passenger data to ease the booking order  
+  - name: User - Booking
+    description: API for User CRUD Booking.  
+  - name: Admin - Flight Schedule
+    description: API for Admin CRUD for the flight schedule API.  
+  - name: Admin - Booking
+    description: API for Admin CRUD for the Rejecting and Accepting the User Booking.
 
 paths:
   '/auth/register':
@@ -1082,7 +1105,7 @@ paths:
       security: 
         - bearerAuth: []
       tags: 
-        - User Profile Details 
+        - User - Profile Details 
       responses:
         '200':
           description: Successfully Get The User Details   
@@ -1137,7 +1160,7 @@ paths:
       security: 
         - bearerAuth: []
       tags: 
-        - User Profile Details 
+        - User - Profile Details 
       responses:
         '200':
           description: Successfully Update The User Details   
@@ -1205,12 +1228,12 @@ paths:
 
   /user/delete-details:
     delete:
-      summary: Only Admin can Delete the User Details  
+      summary: Only User can Delete the User Details  
       operationId: delete-user-details
       security: 
         - bearerAuth: []
       tags: 
-        - Admin 
+        - User - Profile Details
       responses:
         '200':
           description: Successfully Delete The User Details   
@@ -1378,7 +1401,7 @@ paths:
       security: 
         - bearerAuth: []
       tags: 
-        - Admin
+        - Admin - Flight Schedule
       responses:
         '200':
           description: Create Flight Schedule
@@ -1429,7 +1452,7 @@ paths:
       security: 
         - bearerAuth: []
       tags: 
-        - Booking
+        - User - Booking
       responses:
         '200':
           description: Successfully Create Booking   
@@ -1443,25 +1466,32 @@ paths:
                     status: true
                     message: Successfully Create Booking 
                     data:
-                      name: Ngurah Rai (Bali) International Airport
-                      type: large_airport
-                      location: 
-                        location_code: ID-BA
-                        region : Denpasar
-                        country: Indonesia
-                        continent: Asia
-                      code:
-                        iata: DPS
-                        icao: WADD
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure:
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                      destination:
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                      seat: 3
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 2100000
+                      
         '400':
-          description: Bad Request No Such Airports
+          description: Bad Request Can't Create booking No Flight Info
           content:
             application/json:
               examples:
-                Message Cannot Verify:
+                Message Cannot Create Booking:
                   value:
                     status: false
-                    message: Cannot provide airport information because it is unavailable  
+                    message: Cannot create booking because the flight is unavailable  
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -1471,12 +1501,70 @@ paths:
             schema:
               type: object
               properties:
-                code: 
-                  type: string
-                  description: We can request by getting the aiport by usig the code 
+                id: 
+                  type: integer
+                  description: we get the flight id and then we create the booking 
               required:
-                - code
+                - id
             examples:
-              Send Search Value:
+              Get the Flight ID from flight that admin created :
                 value:
-                  code: ngurah 
+                  code: 3 
+
+  /booking/cancel-order:
+    post:
+      summary: User Can Cancel Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-cancel-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Cancel Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Cancel a Flight with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Cancel Booking 
+                    data:
+                      booking_id: 1
+                      cancel_reason: I can't travel in that period of time, cause my graduation. 
+                      status: Pending
+                      
+        '400':
+          description: Bad Request Can't Cancel Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Cancel booking:
+                  value:
+                    status: false
+                    message: Cannot Cancel booking because the flight is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+                cancel_reason:
+                  type: text
+                  description: we create the cancel reason to get the data. 
+              required:
+                - id
+                - cancel_reason 
+            examples:
+              Cancel Flight Because of Graduation:
+                value:
+                  code: 1 
+                  cancel_reason: I can't travel in that period of time, cause my graduation.
