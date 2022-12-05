@@ -78,8 +78,7 @@ module.exports = {
             })
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     login: async (req, res, next) => {
@@ -120,8 +119,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     google: async (req, res, next) => {
@@ -168,8 +166,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     whoami: (req, res, next) => {
@@ -203,8 +200,7 @@ module.exports = {
                 })
             }
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     resetPassword: (req, res, next) => {
@@ -235,8 +231,8 @@ module.exports = {
 
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
     },
 
@@ -280,8 +276,8 @@ module.exports = {
                     message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
                 })
             }
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
 
     }
