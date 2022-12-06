@@ -7,6 +7,7 @@ const YAML = require('yamljs');
 const apiDocument = YAML.load('./docs/api-docs.yaml');
 const auth = require('./auth');
 const country = require('./country');
+const flight = require('./flight');
 const middleware = require('../middlewares'); 
 const access = require('../middlewares/access');
 const name = require('../lib/enum');
@@ -19,6 +20,8 @@ router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocument));
 router.use('/auth', auth);
 // country routes
 router.use('/country', country);
+// flight routes
+router.use('/flight', flight);
 
 // example on how to use the RBAC
 // below is gonna be true

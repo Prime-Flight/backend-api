@@ -1,5 +1,6 @@
 const auth = require('./auth');
 const country = require('./country');
+const flight = require('./flight');
 module.exports = { 
     hello: (req, res, next) => {
         try {
@@ -13,5 +14,5 @@ module.exports = {
         }
     },
     
-    auth, country
+    auth, country, flight
 }
