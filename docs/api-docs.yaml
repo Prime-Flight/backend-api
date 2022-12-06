@@ -269,7 +269,7 @@ components:
     Buyer:
       title: Buyer
       type: object
-      description: 'The Buyer is not the User that login, it consist the information for the User that responsible for the booking of the flight'
+      description: 'The Buyer is related User that login, it consist the information for the User that responsible for the booking of the flight'
       properties:
         id:
           type: integer 
@@ -334,7 +334,6 @@ components:
         - id
         - name
         - nik
-        - passport_number
         - gender
     SeatNumber:
       title: SeatNumber
@@ -1394,7 +1393,7 @@ paths:
                 value:
                   search_name: ngurah 
 
-  /flight/create-flight-schedule:
+  /flight/create:
     post:
       summary: Admin Can Create Flight, Here we need to know who is currently login by using token for getting the `user id` data.
       operationId: admin-create-flight
@@ -1410,14 +1409,20 @@ paths:
               schemas:
                 $ref: '#/components/schemas/Flight'
               examples:
-                Successfully Get Airport Soekarno Hatta By Name:
+                Successfully Create Flight Schedule:
                   value:
                     status: true
                     message: Successfully Create Flight Schedule to Order 
                     data:
                       id: 1
                       airport: Ngurah Rai (Bali) International Airport
-                      flight_date: "2022-09-10 08:00:00" 
+                      flight_code: DPSCTLNK01
+                      departure_iata_code: CGK
+                      departure_icao_code: WIII
+                      departure_time: "2022-12-01 08:00:00"
+                      arrival_iata_code: DPS 
+                      arrival_icao_code: WDDD
+                      arrival_time: "2022-12-01 12:00:00"
         '400':
           description: Bad Request Cannot Create the Flight Schedule
           content:
@@ -1436,14 +1441,208 @@ paths:
             schema:
               type: object
               properties:
-                code: 
+                flight_code:
+                  type: string
+                  description: random generated Code USING IATA-PLANECODE-FlightDate example = DPSCTLNK01
+                departure_iata_code: 
+                  type: string
+                  description: We can request by getting the departure aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                departure_icao_code: 
                   type: string
                   description: We can request by getting the aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                departure_time:
+                  type: date
+                  description: Departure Time from the Flight
+                arrival_iata_code: 
+                  type: string
+                  description: We can request by getting the arrival aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                arrival_icao_code: 
+                  type: string
+                  description: We can request by getting the aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                arrival_time:
+                  type: date
+                  description: Departure Time from the Flight
             examples:
-              Send Search Value:
+              Create CGK-DPS Flight:
                 value:
-                  search_name: ngurah 
-                  code: DPS 
+                  flight_code: DPSCTLNK01
+                  departure_iata_code: CGK
+                  departure_icao_code: WIII
+                  departure_time: "2022-12-01 08:00:00"
+                  arrival_iata_code: DPS 
+                  arrival_icao_code: WDDD
+                  arrival_time: "2022-12-01 12:00:00"
+
+  /flight/delete:
+    delete:
+      summary: Admin Can Delete Flight, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-delete-flight
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Delete Flight Schedule
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Delete Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Delete Flight Schedule to Order 
+                    data:
+                      id: 1
+        '400':
+          description: Bad Request Cannot Delete the Flight Schedule
+          content:
+            application/json:
+              examples:
+                Cannot Create the Flight Schedule:
+                  value:
+                    status: false
+                    message: Cannot Delete the Flight Schedule -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flight_id:
+                  type: int
+                  description: id of the flight to be deleted
+            examples:
+              Delete CGK-DPS Flight:
+                value:
+                  flight_id: 1
+
+  /passenger/save:
+    post:
+      summary: User can save the passenger to ease the invitation this data Goes to Passenger and PassengerDetail model
+      operationId: user-save-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Save Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Save Abel Jollando Data:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passengger_category: adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "123123123123"
+                      gender: Male
+                Successfully Save Abel Jollando Data Without Passport:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passenger_category: adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: null
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: User can add the name of the passenger.
+                nik: 
+                  type: string
+                  description: User can add NIK (ID number) of the passenger.
+                passport_number: 
+                  type: string
+                  description: User can add Passport number of the passenger.
+                gender:
+                  type: enum
+                  description: User can add gender of the passenger.
+            examples:
+              Save Abel Jollando with passport number:
+                value:
+                  passenger_category: adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  passport_number: "2131231231"
+                  gender: Male
+              Save Abel Jollando without passport number:
+                value:
+                  passenger_category: adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  gender: Male
+
+  /passenger/delete:
+    delete:
+      summary: User can delete the passenger this deleteion data Goes to Passenger and PassengerDetail model
+      operationId: user-delete-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Save Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Save Abel Jollando Data:
+                  value:  
+                    status: true
+                    message: Successfully Delete Passenger Data
+                    data: 
+                      id: 1
+                Successfully Save Abel Jollando Data Without Passport:
+                  value:  
+                    status: true
+                    message: Successfully Delete Passenger Data
+                    data: 
+                      id: 1
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: integer
+                description: the id of the passenger 
+            examples:
+              Save Abel Jollando with passport number:
+                value:
+                  id: 1
+              Save Abel Jollando without passport number:
+                value:
+                  id: 1
 
   /booking/order:
     post:
@@ -1501,15 +1700,15 @@ paths:
             schema:
               type: object
               properties:
-                id: 
+                flight_id: 
                   type: integer
                   description: we get the flight id and then we create the booking 
               required:
-                - id
+                - flight_id
             examples:
               Get the Flight ID from flight that admin created :
                 value:
-                  code: 3 
+                  flight_id: 3 
 
   /booking/cancel-order:
     post:
@@ -1533,8 +1732,8 @@ paths:
                     message: Successfully Cancel Booking 
                     data:
                       booking_id: 1
+                      status: Canceled
                       cancel_reason: I can't travel in that period of time, cause my graduation. 
-                      status: Pending
                       
         '400':
           description: Bad Request Can't Cancel Booking
@@ -1566,5 +1765,97 @@ paths:
             examples:
               Cancel Flight Because of Graduation:
                 value:
-                  code: 1 
+                  booking_id: 1 
                   cancel_reason: I can't travel in that period of time, cause my graduation.
+
+  /booking/all:
+    get:
+      summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-get-all-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Get All Booking   
+          content:
+            application/json:
+              schemas:
+                type: array
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get All Booking:
+                  value:
+                    status: true
+                    message: Successfully Create Booking 
+                    data:
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure:
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                      destination:
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                      seat: 3
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 2100000
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+              required:
+                - id
+            examples:
+              Decline Booking:
+                value:
+                  booking_id: 1 
+  /booking/accept:
+    post:
+      summary: Admin Can Accept Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-accept-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Accept Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Accept Booking with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Cancel Booking 
+                    data:
+                      booking_id: 1
+                      status: "Success"
+                      
+        '400':
+          description: Bad Request Can't Accept Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Accept booking:
+                  value:
+                    status: false
+                    message: Cannot accept booking because the booking is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
