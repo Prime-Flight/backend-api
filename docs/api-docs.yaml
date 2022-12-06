@@ -1393,6 +1393,40 @@ paths:
                 value:
                   search_name: ngurah 
 
+  /flight/get-flight:
+    get:
+      summary: Admin Can get the Flight On Going data using goflightlabs.com API
+      operationId: admin-get-flight-data
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Get Flight Schedule Data from goflightlabs.com
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Create Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Get Flight Data 
+                    data: <FLIGHT DATA>
+        '500':
+          description: Request Timeout after request above 200000ms 
+          content:
+            application/json:
+              examples:
+                Request Timeout:
+                  value:
+                    status: false
+                    message: User abort the connection  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /flight/create:
     post:
       summary: Admin Can Create Flight, Here we need to know who is currently login by using token for getting the `user id` data.
