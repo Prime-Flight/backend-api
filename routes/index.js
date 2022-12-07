@@ -1,15 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const router = express.Router(); 
+const router = express.Router();
 const controller = require('../controllers');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const apiDocument = YAML.load('./docs/api-docs.yaml');
 const auth = require('./auth');
 const country = require('./country');
-const middleware = require('../middlewares'); 
+const middleware = require('../middlewares');
 const access = require('../middlewares/access');
 const name = require('../lib/enum');
+const airport = require('./airport')
 
 // for the checker for hello world
 router.get('/', controller.hello);
@@ -19,6 +20,8 @@ router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(apiDocument));
 router.use('/auth', auth);
 // country routes
 router.use('/country', country);
+//airport routes
+router.use('/airport', airport)
 
 // example on how to use the RBAC
 // below is gonna be true

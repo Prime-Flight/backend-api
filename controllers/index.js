@@ -1,6 +1,7 @@
 const auth = require('./auth');
 const country = require('./country');
-module.exports = { 
+const airport = require('./airport')
+module.exports = {
     hello: (req, res, next) => {
         try {
             return res.status(200).json({
@@ -8,10 +9,10 @@ module.exports = {
                 message: "Hello, this is the Prime Flight API",
                 data: null
             })
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     },
-    
-    auth, country
+
+    auth, country, airport
 }
