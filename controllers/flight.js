@@ -10,11 +10,13 @@ module.exports = {
     getFlightData: async(req, res, next) => {
         try {
             // const user = req.user;
-            const response = await fetch(`${FLIGHT_API_HOST}/advanced-real-time-flights?access_key=${FLIGHT_API_KEY}`, { method: 'GET', signal: controller.signal });
+            const response = await fetch(`${FLIGHT_API_HOST}/advanced-real-time-flights?access_key=${FLIGHT_API_KEY}`, { 
+                method: 'GET', signal: controller.signal 
+            });
             let data = await response.json();
             return res.status(200).json({
                 status: true,
-                message: "Successfully Create Flight Schedule to Order",
+                message: "Successfully Get Flight Schedule to Create",
                 data: data
             });
         } catch(err) {
