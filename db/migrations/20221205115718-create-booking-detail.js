@@ -1,28 +1,27 @@
 'use strict';
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Accesses', {
+    await queryInterface.createTable('BookingDetails', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      role_id: {
-        type: Sequelize.INTEGER,
+      booking_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         unique: true
       },
-      module_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        unique: true
+      document_url: {
+        type: Sequelize.STRING
       },
-      read: {
-        type: Sequelize.BOOLEAN
+      kode_penerbangan: {
+        type: Sequelize.STRING
       },
-      write: {
-        type: Sequelize.BOOLEAN
+      price_per_seat: {
+        type: Sequelize.FLOAT
       },
       createdAt: {
         allowNull: false,
@@ -35,6 +34,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Accesses');
+    await queryInterface.dropTable('BookingDetails');
   }
 };

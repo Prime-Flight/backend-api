@@ -1,28 +1,19 @@
 'use strict';
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Accesses', {
+    await queryInterface.createTable('Flights', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      role_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        unique: true
+      airport: {
+        type: Sequelize.STRING
       },
-      module_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        unique: true
-      },
-      read: {
-        type: Sequelize.BOOLEAN
-      },
-      write: {
-        type: Sequelize.BOOLEAN
+      flight_date: {
+        type: Sequelize.DATE
       },
       createdAt: {
         allowNull: false,
@@ -35,6 +26,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Accesses');
+    await queryInterface.dropTable('Flights');
   }
 };
