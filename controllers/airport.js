@@ -15,7 +15,7 @@ module.exports = {
                 .catch(e => {
                     console.log(e)
                 })
-            // console.log("RESPONSE: ", response)
+            console.log("RESPONSE: ", response)
             let airport = [];
 
             response.features.forEach(function (data) {
@@ -43,7 +43,7 @@ module.exports = {
                     data: null
                 })
             }
-            if (response) {
+            if (response.features.length > 0) {
                 return res.status(200).json({
                     status: true,
                     message: 'Successfully get airport information',
