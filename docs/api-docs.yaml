@@ -1393,6 +1393,53 @@ paths:
                 value:
                   search_name: ngurah 
 
+  /flight/get-airport:
+    get:
+      summary: Admin Can get the list of airport from consuming the API from the /airport/search/{{ data }}
+      operationId: admin-get-airport-data
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Get Airport Data
+          content:
+            application/json:
+              examples:
+                Successfully Get Airport Data:
+                  value:
+                    status: true
+                    message: Successfully Get Airport Data 
+                    data: <Airport DATA>
+        '500':
+          description: Request Timeout after request above 200000ms 
+          content:
+            application/json:
+              examples:
+                Request Timeout:
+                  value:
+                    status: false
+                    message: User abort the connection  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                searchValue: 
+                  type: string
+                  description: searchValue body is required to provide the data for consuming the /api/airport/search 
+              required:
+                - message
+            examples:
+              Get Airport List:
+                value:
+                  searchValue: jakarta 
+
   /flight/get-flight:
     get:
       summary: Admin Can get the Flight On Going data using goflightlabs.com API
