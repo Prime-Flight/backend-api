@@ -15,7 +15,14 @@ module.exports = (sequelize, DataTypes) => {
   }
   Flight.init({
     airport: DataTypes.STRING,
-    flight_date: DataTypes.DATE
+    flight_date: DataTypes.DATE,
+    flight_code: DataTypes.STRING,
+    departure_iata_code: DataTypes.STRING,
+    departure_icao_code: DataTypes.STRING,
+    departure_time: DataTypes.DATE,
+    arrival_iata_code: DataTypes.STRING,
+    arrival_icao_code: DataTypes.STRING,
+    arrival_time: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Flight',

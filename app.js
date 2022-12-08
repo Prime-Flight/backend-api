@@ -27,6 +27,7 @@ Sentry.init({
 
 // RequestHandler creates a separate execution context using domains, so that every
 // transaction/span/breadcrumb is attached to its own Hub instance
+
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
@@ -47,11 +48,11 @@ app.use(function onError(err, req, res, next) {
   // The error id is attached to `res.sentry` to be returned
   // and optionally displayed to the user for support.
   res.statusCode = 500;
-  res.end(res.sentry + "\n");
-    res.status(500).json({
-        status: false,
-        message: err
-    });
+  // res.end(res.sentry + "\n");
+  res.status(500).json({
+    status: false,
+    message: err
+  });
 });
 
 app.listen(PORT, console.log(`Running on port = ${PORT}`));

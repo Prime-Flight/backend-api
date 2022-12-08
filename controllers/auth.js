@@ -33,6 +33,13 @@ module.exports = {
                 });
             }
 
+            //untuk testing. Menghapus user jika sudah pernah mendaftar
+            await User.destroy({
+                where: {
+                    email
+                }
+            })
+
             const existUser = await User.findOne({ where: { email } });
             if (existUser) {
                 return res.status(409).json({
@@ -57,7 +64,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `${localhost}/auth/verify-user?token=${verifyToken}`
+            const link = `http://localhost:3213/api/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -77,8 +84,7 @@ module.exports = {
             })
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     login: async (req, res, next) => {
@@ -119,8 +125,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     google: async (req, res, next) => {
@@ -143,9 +148,26 @@ module.exports = {
 
             // if !ada -> simpan data user
             if (!userExist) {
-                return res.status(400).json({
-                    status: false,
-                    message: 'You have registered with your email, Please login with your email instead'
+                userExist = await User.create({
+                    name: data.name,
+                    email: data.email,
+                    is_google: true
+                });
+                payload = {
+                    id: data.id,
+                    name: data.name,
+                    email: data.email,
+                };
+                const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
+
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully Login with Google',
+                    data: {
+                        user_id: data.id,
+                        email: data.email,
+                        token: token
+                    }
                 });
             }
 
@@ -153,7 +175,7 @@ module.exports = {
             payload = {
                 id: data.id,
                 name: data.name,
-                email: data.email,
+                email: data.email
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
@@ -167,8 +189,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     whoami: (req, res, next) => {
@@ -202,8 +223,7 @@ module.exports = {
                 })
             }
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     resetPassword: (req, res, next) => {
@@ -221,7 +241,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `${HOST}/auth/verify-user?token=${verifyToken}`
+            let link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -234,8 +254,8 @@ module.exports = {
 
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
     },
 
@@ -279,8 +299,8 @@ module.exports = {
                     message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
                 })
             }
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
 
     }
