@@ -1893,3 +1893,57 @@ paths:
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+  /booking/reject:
+    post:
+      summary: Admin Can Reject Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-reject-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Reject Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Reject Booking with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Reject Booking the booking with id {{ id }}
+                    data:
+                      booking_id: 1
+                      status: "Rejected"
+                      message: "You can't book this flight because the flight is full"
+        '400':
+          description: Bad Request Can't Reject Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Reject booking:
+                  value:
+                    status: false
+                    message: Cannot reject booking because the booking is already verified and payed  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_id: 
+                  type: integer
+                message: 
+                  type: string
+              required:
+                - booking_id
+                - message
+            examples:
+              Reject Booking with ID 2:
+                value:
+                  booking_id: 1
+                  message: "You can't book this flight because the flight is unavailable"
