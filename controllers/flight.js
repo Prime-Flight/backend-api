@@ -12,20 +12,22 @@ const validator = new Validator;
 module.exports = {
     getAirportData: async (req, res, next) => {
         try {
-            const response = await fetch(`${HOST}/airport/search/indonesia`, {
+            const { searchValue } = req.body
+            const response = await fetch(`${HOST}/api/airport/search/${searchValue}`, {
                 method: 'GET', signal: controller.signal
             });
 
             let data = await response.json();
             
             // check the response data 
-            if (data.data.success == false) {
+            if (data.status == false) {
                 return res.status(404).json({
                     status: false,
-                    error: data.data.error,
+                    error: data.message,
                     data: null
                 });
             }
+
             return res.status(200).json({
                 status: true,
                 message: "Successfully Get Airport Data",
@@ -49,7 +51,7 @@ module.exports = {
     // use for the api endpoint for user getting the flight according to the request.
     getFlightData: async (req, res, next) => {
         try {
-            const response = await fetch(`${FLIGHT_API_HOST}/advanced-real-time-flights?access_key=${FLIGHT_API_KEY}&arrIcao=DPS&&limit=100`, {
+            const response = await fetch(`${FLIGHT_API_HOST}/advanced-real-time-flights?access_key=${FLIGHT_API_KEY}&&limit=100`, {
                 method: 'GET', signal: controller.signal
             });
 

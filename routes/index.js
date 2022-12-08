@@ -23,6 +23,8 @@ router.use('/auth', auth);
 router.use('/country', country);
 // flight routes
 router.use('/flight', flight);
+// airport routes
+router.use('/airport', airport);
 
 // example on how to use the RBAC
 // below is gonna be true
