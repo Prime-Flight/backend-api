@@ -15,12 +15,14 @@ module.exports = {
                 data: data
             });
         } catch (err) {
-            if (err instanceof AbortError) {
-                return res.status(500).json({
-                    status: false,
-                    message: "request was aborted",
-                    data: null
-                });
+            if (typeof(err) == Object) { 
+                if (err instanceof AbortError) {
+                    return res.status(500).json({
+                        status: false,
+                        message: "request was aborted",
+                        data: null
+                    });
+                }
             }
             throw new Error(err);
         } finally {
