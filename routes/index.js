@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const router = express.Router(); 
+const router = express.Router();
 const controller = require('../controllers');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -11,6 +11,7 @@ const flight = require('./flight');
 const middleware = require('../middlewares'); 
 const access = require('../middlewares/access');
 const name = require('../lib/enum');
+const airport = require('./airport')
 
 // for the checker for hello world
 router.get('/', controller.hello);

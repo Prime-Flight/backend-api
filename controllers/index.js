@@ -9,10 +9,10 @@ module.exports = {
                 message: "Hello, this is the Prime Flight API",
                 data: null
             })
-        } catch(err) {
+        } catch (err) {
             next(err);
         }
     },
-    
-    auth, country, flight
+
+    auth, country, airport
 }

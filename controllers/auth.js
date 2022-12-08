@@ -64,7 +64,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
+            const link = `http://localhost:3213/api/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -84,8 +84,7 @@ module.exports = {
             })
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     login: async (req, res, next) => {
@@ -126,8 +125,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     google: async (req, res, next) => {
@@ -157,11 +155,11 @@ module.exports = {
                 });
                 payload = {
                     id: data.id,
-                    name: data.name, 
+                    name: data.name,
                     email: data.email,
                 };
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
-    
+
                 return res.status(200).json({
                     status: true,
                     message: 'Successfully Login with Google',
@@ -176,7 +174,7 @@ module.exports = {
             // generate token
             payload = {
                 id: data.id,
-                name: data.name, 
+                name: data.name,
                 email: data.email
             };
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
@@ -191,8 +189,7 @@ module.exports = {
                 }
             });
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     whoami: (req, res, next) => {
@@ -226,8 +223,7 @@ module.exports = {
                 })
             }
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
         }
     },
     resetPassword: (req, res, next) => {
@@ -258,8 +254,8 @@ module.exports = {
 
 
         } catch (err) {
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
     },
 
@@ -303,8 +299,8 @@ module.exports = {
                     message: 'Your verification link is expired. Please click the resend email verification button on your profile page'
                 })
             }
-            // next(err);
-            console.log(err);
+            next(err);
+            // console.log(err);
         }
 
     }
