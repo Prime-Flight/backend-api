@@ -1801,7 +1801,7 @@ paths:
         - User - Booking
       responses:
         '200':
-          description: Successfully Cancel Booking   
+          description: Successfully Send Request Cancel Booking   
           content:
             application/json:
               schemas:
@@ -1810,10 +1810,11 @@ paths:
                 Successfully Cancel a Flight with a Reason:
                   value:
                     status: true
-                    message: Successfully Cancel Booking 
+                    message: Successfully Send Request Cancel Booking 
                     data:
                       booking_id: 1
-                      status: Canceled
+                      status: Pending
+                      message: Your cancel request is being processed.
                       cancel_reason: I can't travel in that period of time, cause my graduation. 
                       
         '400':
