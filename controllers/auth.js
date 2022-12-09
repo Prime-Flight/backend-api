@@ -153,33 +153,25 @@ module.exports = {
                     email: data.email,
                     is_google: true,
                     role: 2,
-                    is_verified: false
+                    is_verified: true
                 });
                 payload = {
                     id: data.id,
                     name: data.name,
                     email: data.email,
+
                 };
 
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
-                const googleEmail = data.email;
-
-                const verifyToken = jwt.sign({ googleEmail }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
-
-                const link = `http://localhost:3213/api/auth/verify-user?token=${verifyToken}`
-
-                const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
-
                 return res.status(200).json({
                     status: true,
-                    message: 'Successfully Login with Google, Please check your email to verify',
+                    message: 'Successfully Login with Google',
                     data: {
                         user_id: data.id,
                         email: data.email,
                         token: token,
                         role: 2,
-                        is_verified: false
                     }
                 });
             }
@@ -188,8 +180,10 @@ module.exports = {
             payload = {
                 id: data.id,
                 name: data.name,
-                email: data.email
+                email: data.email,
+                role: data.role
             };
+
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
             return res.status(200).json({
@@ -198,7 +192,8 @@ module.exports = {
                 data: {
                     user_id: data.id,
                     email: data.email,
-                    token: token
+                    token: token,
+                    role: data.role
                 }
             });
         } catch (err) {
