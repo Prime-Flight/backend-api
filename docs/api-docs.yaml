@@ -1440,10 +1440,10 @@ paths:
                 value:
                   searchValue: jakarta 
 
-  /flight/get-flight:
+  /flight/get-flight-api:
     get:
       summary: Admin Can get the Flight On Going data using goflightlabs.com API
-      operationId: admin-get-flight-data
+      operationId: admin-get-flight-api-data
       security: 
         - bearerAuth: []
       tags: 
@@ -1471,6 +1471,30 @@ paths:
                     status: false
                     message: User abort the connection  
                     data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /flight/get-flight:
+    get:
+      summary: Admin Can get the Flight On the database API
+      operationId: admin-get-flight-data
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Get Flight Schedule Data from database
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Get Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Get Flight Data 
+                    data: <FLIGHT DATA>
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 

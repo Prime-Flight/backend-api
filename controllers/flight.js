@@ -18,7 +18,7 @@ module.exports = {
             });
 
             let data = await response.json();
-            
+
             // check the response data 
             if (data.status == false) {
                 return res.status(404).json({
@@ -49,7 +49,7 @@ module.exports = {
         }
     },
     // use for the api endpoint for user getting the flight according to the request.
-    getFlightData: async (req, res, next) => {
+    getFlightAPI: async (req, res, next) => {
         try {
             const response = await fetch(`${FLIGHT_API_HOST}/advanced-real-time-flights?access_key=${FLIGHT_API_KEY}&&limit=100`, {
                 method: 'GET', signal: controller.signal
@@ -85,14 +85,44 @@ module.exports = {
             clearTimeout(timeout)
         }
     },
+
+    getAllFlightDatabase: async (req, res, next) => {
+        try {
+            const flight = await Flight.findAll();
+            let flightData = [];
+            flight.forEach(function(data) {
+                let value = {
+                    flight_id: data.id,
+                    flight_code: data.flight_code,
+                    departure: {
+                        departure_iata: data.departure_iata_code,
+                        departure_time: data.departure_time,
+                    },
+                    destination: {
+                        arrival_iata: data.departure_iata_code,
+                        arrival_time: data.departure_time,
+                    },
+                }
+
+                flightData.push(value);
+            });
+            return res.status(200).json({
+                status: true,
+                message: "Successfully get all flight data",
+                data: flightData
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
     create: async (req, res, next) => {
         try {
             const { flight_code, departure_iata_code, departure_icao_code, departure_time, arrival_iata_code, arrival_icao_code, arrival_time } = req.body;
-            
-            const checkFlight = await Flight.findOne({where: { flight_code: flight_code }});
+
+            const checkFlight = await Flight.findOne({ where: { flight_code: flight_code } });
 
             // if there's the flight then return bad request response 
-            if(checkFlight) {
+            if (checkFlight) {
                 return res.status(403).json({
                     status: false,
                     message: `Flight already created with the code of ${flight_code}, Please Create with another code `,
@@ -147,10 +177,10 @@ module.exports = {
         try {
             const { flight_code, flight_id } = req.body;
 
-            const checkFlight = await Flight.findOne({flight_code: flight_code}, {where: { id: flight_id }});
+            const checkFlight = await Flight.findOne({ flight_code: flight_code }, { where: { id: flight_id } });
 
             // if there's no flight then return bad request response 
-            if(checkFlight === null) {
+            if (checkFlight === null) {
                 return res.status(403).json({
                     status: false,
                     message: `Flight cannot be update there's no flight with id of ${id}`,
@@ -159,12 +189,12 @@ module.exports = {
             }
 
             // update
-            const updateFlight = await Flight.findOne({flight_code: flight_code}, {where: { id: flight_id }});
+            const updateFlight = await Flight.findOne({ flight_code: flight_code }, { where: { id: flight_id } });
 
             return res.status(200).json({
                 status: true,
                 message: "Successfully Update Flight Schedule to Order",
-                data: updateFlight 
+                data: updateFlight
             });
         } catch (err) {
             next(err);
@@ -174,10 +204,10 @@ module.exports = {
         try {
             const { flight_id } = req.body;
 
-            const checkFlight = await Flight.findOne({where: { id: flight_id }});
+            const checkFlight = await Flight.findOne({ where: { id: flight_id } });
 
             // if there's no flight then return bad request response 
-            if(checkFlight === null) {
+            if (checkFlight === null) {
                 return res.status(403).json({
                     status: false,
                     message: `Flight Cannot be Deleted there's no flight with id of  ${id}`,
@@ -186,13 +216,13 @@ module.exports = {
             }
 
             // delete
-            await Flight.destroy({where: { id: flight_id }});
+            await Flight.destroy({ where: { id: flight_id } });
 
             return res.status(200).json({
                 status: true,
                 message: "Successfully Delete Flight Schedule to Order",
                 data: {
-                    id : flight_id
+                    id: flight_id
                 }
             });
         } catch (err) {
