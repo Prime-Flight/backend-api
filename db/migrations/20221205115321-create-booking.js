@@ -10,7 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       destination: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
@@ -18,11 +18,14 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       seat: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
-      kode_booking: {
+      status: {
+        type: Sequelize.ENUM('Rejected', 'Canceled', 'Pending', 'Success')
+      },
+      booking_code: {
         type: Sequelize.STRING
       },
       createdAt: {

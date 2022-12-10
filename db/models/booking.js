@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     seat: DataTypes.INTEGER,
-    kode_booking: DataTypes.STRING
+    status: DataTypes.ENUM('Rejected', 'Canceled', 'Pending', 'Success'),
+    booking_code: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Booking',

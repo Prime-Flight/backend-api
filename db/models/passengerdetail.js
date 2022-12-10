@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   PassengerDetail.init({
+    name: DataTypes.STRING,
     nik: DataTypes.STRING,
     passport_number: DataTypes.STRING,
     gender: DataTypes.ENUM('Male', 'Female')

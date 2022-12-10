@@ -20,8 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     document_url: DataTypes.STRING,
-    kode_penerbangan: DataTypes.STRING,
-    price_per_seat: DataTypes.FLOAT
+    price_per_seat: DataTypes.FLOAT,
+    user_cancel_reason: DataTypes.TEXT,
+    admin_reject_reason: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'BookingDetail',

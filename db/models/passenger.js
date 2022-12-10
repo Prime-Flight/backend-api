@@ -19,14 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true
     },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true
-    },
+    
     passenger_category: DataTypes.ENUM('child', 'adult'),
-    nik: DataTypes.STRING,
-    passport_number: DataTypes.STRING,
+    
     passenger_detail: {
       type: DataTypes.INTEGER,
       allowNull: false,

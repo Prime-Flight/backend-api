@@ -10,18 +10,21 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       booking_id: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
       document_url: {
         type: Sequelize.STRING
       },
-      kode_penerbangan: {
-        type: Sequelize.STRING
-      },
       price_per_seat: {
         type: Sequelize.FLOAT
+      },
+      user_cancel_reason: {
+        type: Sequelize.TEXT
+      },
+      admin_reject_reason: {
+        type: Sequelize.TEXT
       },
       createdAt: {
         allowNull: false,

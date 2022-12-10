@@ -10,12 +10,12 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       booking_detail_id: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
       user_id: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },

@@ -10,26 +10,16 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       buyer_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unique: true
-      },
-      name: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
       passenger_category: {
         type: Sequelize.ENUM('child', 'adult')
       },
-      nik: {
-        type: Sequelize.STRING
-      },
-      passport_number: {
-        type: Sequelize.STRING
-      },
+      
       passenger_detail: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
