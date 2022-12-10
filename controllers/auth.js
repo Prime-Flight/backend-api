@@ -151,13 +151,17 @@ module.exports = {
                 userExist = await User.create({
                     name: data.name,
                     email: data.email,
-                    is_google: true
+                    is_google: true,
+                    role: 2,
+                    is_verified: true
                 });
                 payload = {
                     id: data.id,
                     name: data.name,
                     email: data.email,
+
                 };
+
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
                 return res.status(200).json({
@@ -166,7 +170,8 @@ module.exports = {
                     data: {
                         user_id: data.id,
                         email: data.email,
-                        token: token
+                        token: token,
+                        role: 2,
                     }
                 });
             }
@@ -175,8 +180,10 @@ module.exports = {
             payload = {
                 id: data.id,
                 name: data.name,
-                email: data.email
+                email: data.email,
+                role: data.role
             };
+
             const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
 
             return res.status(200).json({
@@ -185,7 +192,8 @@ module.exports = {
                 data: {
                     user_id: data.id,
                     email: data.email,
-                    token: token
+                    token: token,
+                    role: data.role
                 }
             });
         } catch (err) {
