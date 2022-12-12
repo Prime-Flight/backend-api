@@ -6,6 +6,12 @@ const jwt = require('jsonwebtoken')
 const lib = require('../lib')
 const { JWT_SIGNATURE_KEY, HOST } = process.env;
 const googleOauth2 = require('../utils/google');
+const fetch = require('node-fetch')
+const { AbortError } = require('node-fetch');
+const { COUNTRY_API } = process.env;
+const AbortController = globalThis.AbortController || require('abort-controller');
+const controller = new AbortController();
+const timeout = setTimeout(() => { controller.abort(); }, 10000); // timeout above 10000ms
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -130,36 +136,47 @@ module.exports = {
     },
     google: async (req, res, next) => {
         try {
-            const code = req.query.code;
-            if (!code) {
-                const url = googleOauth2.generateAuthURL();
-
-                return res.redirect(url);
+            // frontend flow we must accept the access_token from front end;
+            const { access_token } = req.body;
+            const url = `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+            const options = {
+                method: "GET",
+                headers: {
+                    "X-RapidAPI-Host": "www.googleapis.com",
+                },
             }
 
-            // get token
-            await googleOauth2.setCredentials(code);
+            // fetch the url
+            const response = await fetch(url, options);
+            let data = await response.json()
 
-            // get data user
-            const { data } = await googleOauth2.getUserData();
+            // get the email form the access response.
+            const { email, name } = data;
 
             // check apakah user email ada di database
-            const userExist = await User.findOne({ where: { email: data.email } });
+            let userExist = await User.findOne({ where: { email: email } });
 
             // if !ada -> simpan data user
             if (!userExist) {
                 userExist = await User.create({
-                    name: data.name,
-                    email: data.email,
+                    name: name,
+                    email: email,
                     is_google: true,
                     role: 2,
                     is_verified: true
                 });
                 payload = {
-                    id: data.id,
-                    name: data.name,
-                    email: data.email,
-
+                    id: userExist.id,
+                    name: userExist.name,
+                    email: userExist.email,
+                };
+            } else {
+                // generate token
+                payload = {
+                    id: userExist.id,
+                    name: userExist.name,
+                    email: userExist.email,
+                    role: userExist.role
                 };
 
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
@@ -168,46 +185,13 @@ module.exports = {
                     status: true,
                     message: 'Successfully Login with Google',
                     data: {
-                        user_id: data.id,
-                        email: data.email,
+                        user_id: userExist.id,
+                        email: userExist.email,
                         token: token,
-                        role: 2,
+                        role: userExist.role
                     }
                 });
             }
-
-            // generate token
-            payload = {
-                id: data.id,
-                name: data.name,
-                email: data.email,
-                role: data.role
-            };
-
-            const token = jwt.sign(payload, JWT_SIGNATURE_KEY);
-
-            return res.status(200).json({
-                status: true,
-                message: 'Successfully Login with Google',
-                data: {
-                    user_id: data.id,
-                    email: data.email,
-                    token: token,
-                    role: data.role
-                }
-            });
-        } catch (err) {
-            next(err);
-        }
-    },
-    whoami: (req, res, next) => {
-        try {
-        } catch (err) {
-            next(err);
-        }
-    },
-    viewForgotPassword: (req, res, next) => {
-        try {
         } catch (err) {
             next(err);
         }
