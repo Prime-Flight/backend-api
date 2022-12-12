@@ -1631,6 +1631,114 @@ paths:
                   nik: "32700333111111"
                   gender: Male
 
+  /passenger/get:
+    get:
+      summary: User get the data passenger From Passenger Detail according to the buyer_id (logged user id)
+      operationId: user-save-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Get Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Save Abel Jollando Data:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passengger_category: adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "123123123123"
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+
+  /passenger/update:
+    put:
+      summary: User can update the passenger data in PassengerDetail according to the detail of the user id in Passenger Model
+      operationId: user-update-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Update Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Update Abel Jollando Passport Number:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passenger_category: adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "180003"
+                      gender: Male
+                Successfully Update Abel Jollando Data Change name:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passenger_category: adult
+                      name: Abel Jollando Maulana
+                      nik: "32700333111111"
+                      passport_number: null
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: User can add the name of the passenger.
+                nik: 
+                  type: string
+                  description: User can add NIK (ID number) of the passenger.
+                passport_number: 
+                  type: string
+                  description: User can add Passport number of the passenger.
+                gender:
+                  type: enum
+                  description: User can add gender of the passenger.
+            examples:
+              Update Abel Jollando passport number:
+                value:
+                  passenger_category: adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  passport_number: "180003"
+                  gender: Male
+              Update Abel Jollando Name:
+                value:
+                  passenger_category: adult
+                  name: Abel Jollando Maulana
+                  nik: "32700333111111"
+                  gender: Male
+
   /passenger/delete:
     delete:
       summary: User can delete the passenger this deleteion data Goes to Passenger and PassengerDetail model
@@ -1744,6 +1852,126 @@ paths:
                 value:
                   flight_id: 3 
 
+  /booking/mybooking:
+    get:
+      summary: User Can Get the User Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-get-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Get My Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get My Booking:
+                  value:
+                    status: true
+                    message: Successfully Get My Booking 
+                    data:
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure:
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                      destination:
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                      seat: 3
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 2100000
+        '400':
+          description: Bad Request Can't Get booking booking Info
+          content:
+            application/json:
+              examples:
+                Message Cannot Get Booking:
+                  value:
+                    status: false
+                    message: Cannot create booking because the flight is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /booking/update-order:
+    put:
+      summary: User Can Update Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-update-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Update Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Update Booking Seat into Only 2 Seat from 3 Seat:
+                  value:
+                    status: true
+                    message: Successfully Update Booking 
+                    data:
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure:
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                      destination:
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                      seat: 2
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 140000
+        '400':
+          description: Bad Request Can't Update booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Update Booking:
+                  value:
+                    status: false
+                    message: Cannot update booking for this passenger   
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passenger_id: 
+                  type: integer
+                  description: Passenger Id is to get the updated  
+                seat:
+                  type: integer
+                  description: Passenger Seat Count  
+              required:
+                - passenger_id
+                - seat 
+            examples:
+              Update Seat and the Passenger Id:
+                value:
+                  passenger_id: 1 
+                  seat: 2
+
   /booking/cancel-order:
     post:
       summary: User Can Cancel Booking, Here we need to know who is currently login by using token for getting the `user id` data.
@@ -1823,7 +2051,7 @@ paths:
                 Successfully Get All Booking:
                   value:
                     status: true
-                    message: Successfully Create Booking 
+                    message: Successfully Get All Booking 
                     data:
                       booking_id: 1
                       booking_code: Z3DPSCTLNK01
@@ -1833,7 +2061,7 @@ paths:
                         departure_iata: CKG
                         departure_iata: WIII                        
                         departure_time: "2022-09-10 20:00:00"
-                      destination:
+                      arrival:
                         arrival_iata: DPS
                         arrival_iata: WDDD
                         arrival_time: "2022-09-10 23:00:00"
@@ -1843,21 +2071,6 @@ paths:
                       total_price: 2100000
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                id: 
-                  type: integer
-                  description: we get the booking id of that user. 
-              required:
-                - id
-            examples:
-              Decline Booking:
-                value:
-                  booking_id: 1 
   /booking/accept:
     post:
       summary: Admin Can Accept Booking, Here we need to know who is currently login by using token for getting the `user id` data.
@@ -1877,7 +2090,7 @@ paths:
                 Successfully Accept Booking with a Reason:
                   value:
                     status: true
-                    message: Successfully Cancel Booking 
+                    message: Successfully Accept Booking 
                     data:
                       booking_id: 1
                       status: "Success"
@@ -1936,15 +2149,18 @@ paths:
             schema:
               type: object
               properties:
-                booking_id: 
+                id: 
                   type: integer
+                  description: we get the booking id of that user. 
+
                 message: 
                   type: string
               required:
-                - booking_id
+                - id
                 - message
             examples:
-              Reject Booking with ID 2:
+              Decline Booking:
                 value:
-                  booking_id: 1
+                  booking_id: 1 
                   message: "You can't book this flight because the flight is unavailable"
+
