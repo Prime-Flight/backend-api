@@ -2178,6 +2178,21 @@ paths:
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+            examples:
+              Accpet Booking:
+                value:
+                  booking_id: 1 
+
+
   /booking/reject:
     post:
       summary: Admin Can Reject Booking, Here we need to know who is currently login by using token for getting the `user id` data.
@@ -2223,7 +2238,6 @@ paths:
                 id: 
                   type: integer
                   description: we get the booking id of that user. 
-
                 message: 
                   type: string
               required:
