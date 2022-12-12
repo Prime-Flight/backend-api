@@ -2,28 +2,26 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Accesses', {
+    await queryInterface.createTable('PassengerDetails', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      role_id: {
-        type: Sequelize.INTEGER,
+      name: {
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true
       },
-      module_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        unique: true
+      nik: {
+        type: Sequelize.STRING
       },
-      read: {
-        type: Sequelize.BOOLEAN
+      passport_number: {
+        type: Sequelize.STRING
       },
-      write: {
-        type: Sequelize.BOOLEAN
+      gender: {
+        type: Sequelize.ENUM('Male', 'Female')
       },
       createdAt: {
         allowNull: false,
@@ -36,6 +34,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Accesses');
+    await queryInterface.dropTable('PassengerDetails');
   }
 };

@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Transactions', {
+    await queryInterface.createTable('BookingDetails', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -14,11 +14,17 @@ module.exports = {
         allowNull: false,
         unique: true
       },
-      total_price: {
+      document_url: {
+        type: Sequelize.STRING
+      },
+      price_per_seat: {
         type: Sequelize.FLOAT
       },
-      status: {
-        type: Sequelize.ENUM('Rejected', 'Pending', 'Success')
+      user_cancel_reason: {
+        type: Sequelize.TEXT
+      },
+      admin_reject_reason: {
+        type: Sequelize.TEXT
       },
       createdAt: {
         allowNull: false,
@@ -31,6 +37,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Transactions');
+    await queryInterface.dropTable('BookingDetails');
   }
 };
