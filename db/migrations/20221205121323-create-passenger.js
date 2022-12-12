@@ -37,3 +37,4 @@ module.exports = {
     await queryInterface.dropTable('Passengers');
   }
 };
+
