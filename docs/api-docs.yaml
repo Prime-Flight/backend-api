@@ -513,7 +513,7 @@ paths:
     description: Login User
 
   /auth/login/google:
-    get:
+    post:
       summary: Login with Google
       operationId: get-auth-login-google
       tags: 
@@ -546,8 +546,17 @@ paths:
                     status: false
                     message: You have registered with your email, Please login with your email instead
                     data: null
-      decription: Get the Google Login using the Authenticate.
-    description: Login User With Google
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token: 
+                  type: string
+                  description: get the access token from Front End
+              required:
+                - access_token
 
   /auth/whoami:
     get:
