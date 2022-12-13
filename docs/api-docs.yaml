@@ -1132,7 +1132,7 @@ paths:
                       url_profile_picture: null
                       gender: Male
                       nationality: Indonesia
-                      is_verified: 0
+                      is_verified: true 
                       phone_number: 6288844443322
                 Get Nanda Suparman with Profile Picture and Verified :
                   value:
@@ -1187,7 +1187,7 @@ paths:
                       url_profile_picture: null
                       gender: Male
                       nationality: Indonesia
-                      is_verified: 0
+                      is_verified: false
                       phone_number: 6288844443322
         '400':
           description: Bad Request No Such User
@@ -1211,26 +1211,35 @@ paths:
               properties:
                 name: 
                   type: string
-                  description: body of the name if the user want to update the name   
+                  description: body of the name if the user want to update the name, if not then send the Usual
+                email: 
+                  type: string
+                  description: body of the email if the user want to update the email, if not then send the Usual
                 url_profile_picture:  
                   type: string
-                  description: Update the Profile Picture  
+                  description: body of the url profile picture if the user want to updat the url_profile_picture  if not then send the usual 
+                gender:
+                  type: string
+                  description: send the usual gender.
                 nationality: 
                   type: string
-                  description: Update the Nationality  
+                  description: Update the Nationality if the User want
                 phone_number:
                   type: string
                   description: Update the Phone Number  
               required:
                 - name
                 - url_profile_picture
+                - gender
                 - nationality
                 - phone_number
             examples:
-              Send Update Value without profile picture:
+              Send Update Email without profile picture:
                 value:
                   name: Nanda Suparman
+                  email: nandasuparmin@gmail.com
                   url_profile_picture: null 
+                  gender: Male
                   nationality: Indonesia
                   phone_number: 6288844443322
 
