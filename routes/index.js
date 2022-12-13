@@ -11,7 +11,8 @@ const flight = require('./flight');
 const middleware = require('../middlewares'); 
 const access = require('../middlewares/access');
 const name = require('../lib/enum');
-const airport = require('./airport')
+const airport = require('./airport');
+const booking = require('./booking');
 
 // for the checker for hello world
 router.get('/', controller.hello);
@@ -25,6 +26,8 @@ router.use('/country', country);
 router.use('/flight', flight);
 // airport routes
 router.use('/airport', airport);
+// booking routes
+router.use('/booking', booking);
 
 // example on how to use the RBAC
 // below is gonna be true
