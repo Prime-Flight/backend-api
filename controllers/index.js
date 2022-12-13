@@ -3,7 +3,8 @@ const country = require('./country');
 const airport = require('./airport');
 const flight = require('./flight');
 const booking = require('./booking');
-module.exports = { 
+const userBooking = require('./user-booking')
+module.exports = {
     hello: (req, res, next) => {
         try {
             return res.status(200).json({
@@ -16,5 +17,5 @@ module.exports = {
         }
     },
 
-    auth, country, airport, flight, booking
+    auth, country, airport, flight, booking, userBooking
 }
