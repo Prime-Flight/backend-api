@@ -4,11 +4,10 @@ const Validator = require('fastest-validator');
 const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
-const { JWT_SIGNATURE_KEY, HOST } = process.env;
+const { JWT_SIGNATURE_KEY, HOST, COUNTRY_API, STAGING_HOST } = process.env;
 const googleOauth2 = require('../utils/google');
 const fetch = require('node-fetch')
 const { AbortError } = require('node-fetch');
-const { COUNTRY_API } = process.env;
 const AbortController = globalThis.AbortController || require('abort-controller');
 const controller = new AbortController();
 const timeout = setTimeout(() => { controller.abort(); }, 10000); // timeout above 10000ms
@@ -70,7 +69,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `http://localhost:3213/api/auth/verify-user?token=${verifyToken}`
+            const link = `${HOST}/auth/verify-user?token=${verifyToken}`
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
@@ -202,9 +201,9 @@ module.exports = {
 
             const existUser = await User.findOne({ where: { email } })
             if (existUser) {
-                const payload = { user_id: existUser.id }
+                const payload = { email: existUser.email }
                 const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
-                const link = `${localhost}/auth/reset-password?token=${token}`
+                const link = `${HOST}/auth/reset-password?token=${token}`
                 emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: existUser.name, link: link })
 
                 await lib.email.sendEmail(email, 'Reset Password', emailTemplate)
@@ -218,9 +217,46 @@ module.exports = {
             next(err);
         }
     },
-    resetPassword: (req, res, next) => {
+    resetPassword: async (req, res, next) => {
         try {
+            const { password, confirm_new_password } = req.body
+            const token = req.query
+
+            payload = jwt.verify(token, JWT_SIGNATURE_KEY)
+            console.log(patload)
+
+            const user = await User.findOne({ where: { email: payload.email } })
+
+            if (!user) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Cannot Reset User Password because User Email is Unavailable',
+                    data: null
+                })
+            }
+            if (password != confirm_new_password) {
+                return res.status(400).json({
+                    status: false,
+                    message: `password and confirm password doesn't match`,
+                    data: null
+                })
+            }
+
+            const hashed = await bcrypt.hash(password, 10)
+            const reset = await User.update({ password: hashed }, { where: { email: payload.email } })
+
+            if (reset) {
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully Reset Password',
+                    data: {
+                        email: payload.email,
+                        newPassword: true
+                    }
+                })
+            }
         } catch (err) {
+            console.log(err)
             next(err);
         }
     },
