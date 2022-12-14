@@ -200,9 +200,17 @@ module.exports = {
             const { email } = req.body;
 
             const existUser = await User.findOne({ where: { email } })
+            if (!existUser) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Cannot Verify User because User email is unavailable",
+                    data: null
+                })
+            }
+
             if (existUser) {
                 const payload = { email: existUser.email }
-                const token = jwt.sign(payload, JWT_SIGNATURE_KEY)
+                const token = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
                 const link = `${HOST}/auth/reset-password?token=${token}`
                 emailTemplate = await lib.email.getHtml('reset-password.ejs', { name: existUser.name, link: link })
 
@@ -210,7 +218,10 @@ module.exports = {
 
                 res.status(200).json({
                     status: true,
-                    message: 'email sent successfully'
+                    message: 'Successfully Send Email Forgot Password',
+                    data: {
+                        email: existUser.email
+                    }
                 })
             }
         } catch (err) {
@@ -220,10 +231,10 @@ module.exports = {
     resetPassword: async (req, res, next) => {
         try {
             const { password, confirm_new_password } = req.body
-            const token = req.query
+            const { token } = req.query
 
             payload = jwt.verify(token, JWT_SIGNATURE_KEY)
-            console.log(patload)
+            console.log(payload)
 
             const user = await User.findOne({ where: { email: payload.email } })
 
