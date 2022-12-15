@@ -12,7 +12,6 @@ module.exports = {
       destination: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true
       },
       user: {
         type: Sequelize.INTEGER
@@ -20,7 +19,6 @@ module.exports = {
       seat: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        unique: true
       },
       status: {
         type: Sequelize.ENUM('Rejected', 'Canceled', 'Pending', 'Success')
