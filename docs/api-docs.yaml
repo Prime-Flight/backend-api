@@ -1974,14 +1974,12 @@ paths:
                       booking_code: Z3DPSCTLNK01
                       flight_code: DPSCTLNK01
                       document_url: https://imgur.one/3dxxse23
-                      departure:
-                        departure_iata: CKG
-                        departure_iata: WIII                        
-                        departure_time: "2022-09-10 20:00:00"
-                      destination:
-                        arrival_iata: DPS
-                        arrival_iata: WDDD
-                        arrival_time: "2022-09-10 23:00:00"
+                      departure_iata: CKG
+                      departure_iata: WIII                        
+                      departure_time: "2022-09-10 20:00:00"
+                      arrival_iata: DPS
+                      arrival_iata: WDDD
+                      arrival_time: "2022-09-10 23:00:00"
                       seat: 3
                       status: pending
                       price_per_seat: 700000
