@@ -9,7 +9,7 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     await queryInterface.removeConstraint('Buyers', 'Buyers_user_id_key')
-  },
+  },//
 
   async down(queryInterface, Sequelize) {
     /**

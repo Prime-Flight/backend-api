@@ -22,4 +22,4 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'SeatNumber',
   });
   return SeatNumber;
-};
+};//
