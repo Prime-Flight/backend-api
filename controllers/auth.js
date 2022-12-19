@@ -341,6 +341,17 @@ module.exports = {
             next(err);
             // console.log(err);
         }
-
+    },
+    whoami: (req, res, next) => { 
+      try { 
+        const user = req.user;
+        return res.status(200).json({
+          status: true,
+          message: "Successfully Get Current User",
+          data: user
+        });
+      } catch(err) { 
+        next(err);
+      }
     }
 }
