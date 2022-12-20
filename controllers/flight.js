@@ -6,7 +6,9 @@ const AbortController = globalThis.AbortController || require('abort-controller'
 const controller = new AbortController();
 const timeout = setTimeout(() => { controller.abort(); }, 200000); // timeout above 10000ms
 const { FLIGHT_API_HOST, FLIGHT_API_KEY, HOST } = process.env;
-const { Flight } = require('../db/models');
+const { Flight, Airline } = require('../db/models');
+const { QueryTypes } = require('sequelize');
+const db = require('../db/models');
 const Validator = require('fastest-validator');
 const validator = new Validator;
 module.exports = {
@@ -88,30 +90,32 @@ module.exports = {
 
     getAllFlightDatabase: async (req, res, next) => {
         try {
-            const flight = await Flight.findAll();
-            let flightData = [];
-            flight.forEach(function(data) {
-                let value = {
-                    flight_id: data.id,
-                    flight_code: data.flight_code,
-                    departure: {
-                        departure_iata: data.departure_iata_code,
-                        departure_time: data.departure_time,
-                    },
-                    destination: {
-                        arrival_iata: data.departure_iata_code,
-                        arrival_time: data.departure_time,
-                    },
-                }
-
-                flightData.push(value);
+            const flightInfo =  `
+                    SELECT
+                    "Flights".id AS flight_id,
+                    "Flights".flight_code,
+                    "Flights".departure_iata_code,
+                    "Flights".departure_time,
+                    "Flights".arrival_iata_code,
+                    "Flights".arrival_time,
+                    "Airlines".airline,
+                    "Airlines".airline_code,
+                    "Airlines".airline_logo,
+                    "Flights".price
+                    FROM "Flights" JOIN "Airlines"
+                    ON "Flights".airline_id = "Airlines".id
+                  `
+            const flight = await db.sequelize.query(flightInfo, {
+                type: QueryTypes.SELECT
             });
+    
             return res.status(200).json({
                 status: true,
                 message: "Successfully get all flight data",
-                data: flightData
+                data: flight
             });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },

@@ -197,15 +197,9 @@ components:
         arrival_time:
           type: date 
           description: Date and Time of the Flight Arrival
-        airline:
-          type: string
-          description: airline name
-        airline_code:
-          type: string
-          description: airline code
-        airline_logo:
-          type: string
-          description: stores the url for the image
+        airline_id:
+          type: integer
+          description: foreign key of Airline model
         price:
           type: float
           description: price for the flights
@@ -218,10 +212,25 @@ components:
         - arrival_iata_code
         - arrival_icao_code
         - arrival_time
-        - airline
-        - airline_code
-        - airline_logo
+        - airline_id
         - price
+    Airline:
+      title: Airline
+      type: object
+      description: "This is for the airline information"
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Airline
+        airline:
+          type: string
+          description: airline name
+        airline_code:
+          type: string
+          description: airline code
+        airline_logo:
+          type: string
+          description: stores the url for the image
     Booking:
       title: Booking
       type: object
@@ -1536,7 +1545,18 @@ paths:
                   value:
                     status: true
                     message: Successfully Get Flight Data 
-                    data: <FLIGHT DATA>
+                    data: 
+                      flight_id: 1
+                      flight_code: "DPSCTNLKCKG01"
+                      departure_iata: "DPS"
+                      departure_time: "2022-10-12T00:12:00.000Z"
+                      arrival_iata: "DPS"
+                      arrival_time: "2022-10-12T00:12:00.000Z"
+                      airline: "Citilink"
+                      airline_code: "CTLNK"
+                      airline_logo: "http://2.bp.blogspot.com/-i-D40gBOdt8/VC0p4CqbEQI/AAAAAAAAFMM/aX7TYbmWhFk/s1600/Logo%2BCitilink.png"
+                      price": 1500000
+                       
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
