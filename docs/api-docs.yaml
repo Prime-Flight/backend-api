@@ -200,6 +200,9 @@ components:
         airline_id:
           type: integer
           description: foreign key of Airline model
+        seat_capacity:
+          type: integer
+          description: the seat capacity of the flights, this element is to count the remaining seat for the user booking. 
         price:
           type: float
           description: price for the flights
@@ -1555,8 +1558,8 @@ paths:
                       airline: "Citilink"
                       airline_code: "CTLNK"
                       airline_logo: "http://2.bp.blogspot.com/-i-D40gBOdt8/VC0p4CqbEQI/AAAAAAAAFMM/aX7TYbmWhFk/s1600/Logo%2BCitilink.png"
-                      price": 1500000
-                       
+                      seat_capacity: 150
+                      price: 1500000
         '401':
           $ref: '#/components/responses/UnauthorizedError'
 
@@ -1945,7 +1948,7 @@ paths:
         - User - Booking
       responses:
         '200':
-          description: Successfully Create Booking   
+          description: Successfully Get Flight    
           content:
             application/json:
               schemas:
@@ -1968,6 +1971,7 @@ paths:
                       airline: Citilink
                       airline_code: CTLNK
                       airline_logo: https://imgur.one/23123123
+                      seat_capacity: 150
                       price: 700000
       requestBody:
         content:
@@ -2022,6 +2026,7 @@ paths:
                       arrival_iata: DPS
                       arrival_iata: WDDD
                       arrival_time: "2022-09-10 23:00:00"
+                      seat_capacity: 150
                       seat: 3
                       status: pending
                       price_per_seat: 700000

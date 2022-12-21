@@ -101,6 +101,7 @@ module.exports = {
                     "Airlines".airline,
                     "Airlines".airline_code,
                     "Airlines".airline_logo,
+                    "Flights".seat_capacity,
                     "Flights".price
                     FROM "Flights" JOIN "Airlines"
                     ON "Flights".airline_id = "Airlines".id

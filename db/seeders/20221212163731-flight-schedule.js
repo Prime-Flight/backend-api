@@ -35,7 +35,8 @@ module.exports = {
                 createdAt: currentDate,
                 updatedAt: currentDate,
                 airline_id: 1,
-                price: 1500000
+                price: 1500000,
+                seat_capacity: 100
             },
             {
                 id: 2,
@@ -49,7 +50,8 @@ module.exports = {
                 createdAt: currentDate,
                 updatedAt: currentDate,
                 airline_id: 2,
-                price: 1300000
+                price: 1300000,
+                seat_capacity: 150
             },
         ], {});
     },
