@@ -3,7 +3,7 @@ const { AIRPORT_API_HOST } = process.env;
 module.exports = {
     getAirport: async (req, res, next) => {
         try {
-            const { keyword } = req.params
+            const { keyword } = req.query
             console.log(keyword)
             const url = `${AIRPORT_API_HOST}/airport/suggest/${keyword}`
             const options = {
