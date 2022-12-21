@@ -62,7 +62,6 @@ module.exports = {
                 }
             }
             next(err)
-            throw new Error(err);
         } finally {
             clearTimeout(timeout)
         }

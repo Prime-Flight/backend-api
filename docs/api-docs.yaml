@@ -348,10 +348,10 @@ components:
           description: Unique Identifier for PassengerDetail
         name:
           type: string 
-          description: Foreign key of User Id
+          description: name of the passenger
         nik:
           type: string
-          description: the ID number of the passenger for adult 
+          description: the ID number of the passenger for adult -> check for unique data here.
         passport_number:
           type: string
           description: the passport number of the passenger for adult and foreign
@@ -400,6 +400,8 @@ tags:
     description: User Details after creating the Account 
   - name: User - Passenger Data
     description: User can add passenger data to ease the booking order  
+  - name: User - Booking
+    description: API for User CRUD Booking.  
   - name: User - Booking
     description: API for User CRUD Booking.  
   - name: Admin - Flight Schedule
@@ -543,10 +545,9 @@ paths:
                 - password
             examples:
               Login Nanda Suparman:
+                value:
                   email: "nandasuparman@gmail.com"
                   password: "super-secret-password"
-      decription: Post the login and should be encrypted and also should be returned jwt token.
-    description: Login User
 
   /auth/login/google:
     post:
@@ -1104,12 +1105,12 @@ paths:
                           "Zambia",
                           "Zimbabwe"]
 
-  /country/phone-code?country_name={countryName}:
+  /country/phone-code?country_name={country_name}:
     get:
       summary: Get Phone Code of the Country that has been selected from the nationality of the User, it is forwarded from the countrycode.dev 
       parameters:
         - in: query
-          name: countryName
+          name: country_name
           schema:
             type: string
           required: true
@@ -1329,70 +1330,16 @@ paths:
                 value:
                   email: nandapermana@gmail.com 
 
-  /airport/code:
-    get:
-      summary: Get Airport by providing either the IATA code or the ICAO code
-      operationId: get-airport-get-by-code
-      security: 
-        - bearerAuth: []
-      tags: 
-        - Airport
-      responses:
-        '200':
-          description: Successfully get the airport by the code   
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                Successfully Get Airport Soekarno Hatta By Code:
-                  value:
-                    status: true
-                    message: Successfully get airport by Code
-                    data:
-                      name: Soekarno-Hatta International Airport
-                      type: large_airport
-                      location: 
-                        location_code: ID-BT
-                        region : Banten
-                        country: Indonesia
-                        continent: Asia
-                      code:
-                        iata: CGK
-                        icao: WIII
-        '400':
-          description: Bad Request No Such Airports
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                Message Cannot Verify:
-                  value:
-                    status: false
-                    message: Cannot provide airport information because it is unavailable  
-                    data: null
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code: 
-                  type: string
-                  description: We can request by getting the aiport by usig the code 
-              required:
-                - code
-            examples:
-              Send Code of Soekarno Hatta Cengkareng:
-                value:
-                  code: cgk
-
-  /airport/search:
+  /airport/search?keyword={keyword}:
     get:
       summary: Get Airport by searching the name of the airport.
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: true
+          description: to filter the airport based on the search value 
       operationId: get-airport-get-by-name
       security: 
         - bearerAuth: []
@@ -1431,24 +1378,9 @@ paths:
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code: 
-                  type: string
-                  description: We can request by getting the aiport by usig the code 
-              required:
-                - code
-            examples:
-              Send Search Value:
-                value:
-                  search_name: ngurah 
 
   /flight/get-airport:
-    get:
+    post:
       summary: Admin Can get the list of airport from consuming the API from the /airport/search/{{ data }}
       operationId: admin-get-airport-data
       security: 
@@ -1494,39 +1426,39 @@ paths:
                 value:
                   searchValue: jakarta 
 
-  /flight/get-flight-api:
-    get:
-      summary: Admin Can get the Flight On Going data using goflightlabs.com API
-      operationId: admin-get-flight-api-data
-      security: 
-        - bearerAuth: []
-      tags: 
-        - Admin - Flight Schedule
-      responses:
-        '200':
-          description: Get Flight Schedule Data from goflightlabs.com
-          content:
-            application/json:
-              schemas:
-                $ref: '#/components/schemas/Flight'
-              examples:
-                Successfully Create Flight Schedule:
-                  value:
-                    status: true
-                    message: Successfully Get Flight Data 
-                    data: <FLIGHT DATA>
-        '500':
-          description: Request Timeout after request above 200000ms 
-          content:
-            application/json:
-              examples:
-                Request Timeout:
-                  value:
-                    status: false
-                    message: User abort the connection  
-                    data: null
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+  # /flight/get-flight-api:
+  #   get:
+  #     summary: Admin Can get the Flight On Going data using goflightlabs.com API
+  #     operationId: admin-get-flight-api-data
+  #     security: 
+  #       - bearerAuth: []
+  #     tags: 
+  #       - Admin - Flight Schedule
+  #     responses:
+  #       '200':
+  #         description: Get Flight Schedule Data from goflightlabs.com
+  #         content:
+  #           application/json:
+  #             schemas:
+  #               $ref: '#/components/schemas/Flight'
+  #             examples:
+  #               Successfully Create Flight Schedule:
+  #                 value:
+  #                   status: true
+  #                   message: Successfully Get Flight Data 
+  #                   data: <FLIGHT DATA>
+  #       '500':
+  #         description: Request Timeout after request above 200000ms 
+  #         content:
+  #           application/json:
+  #             examples:
+  #               Request Timeout:
+  #                 value:
+  #                   status: false
+  #                   message: User abort the connection  
+  #                   data: null
+  #       '401':
+  #         $ref: '#/components/responses/UnauthorizedError'
 
   /flight/get-flight:
     get:
@@ -1596,6 +1528,7 @@ paths:
                       airline: Citilink
                       airline_code: CTLNK
                       airline_logo: https://imgur.one/23123123
+                      seat_capacity: 30
                       price: 700000
         '400':
           description: Bad Request Cannot Create the Flight Schedule
@@ -1636,27 +1569,23 @@ paths:
                 arrival_time:
                   type: date
                   description: Departure Time from the Flight
-                airline:
-                  type: string
-                airline_code:
-                  type: string
-                airline_logo:
-                  type: string
-                price:
+                airline_id:
                   type: integer
+                seat_capacity:
+                  type: integer
+                price:
+                  type: float
             examples:
               Create CGK-DPS Flight:
                 value:
-                  flight_code: DPSCTLNK01
                   departure_iata_code: CGK
                   departure_icao_code: WIII
                   departure_time: "2022-12-01 08:00:00"
                   arrival_iata_code: DPS 
                   arrival_icao_code: WDDD
                   arrival_time: "2022-12-01 12:00:00"
-                  airline: Citilink
-                  airline_code: CTLNK
-                  airline_logo: https://imgur.one/23123123
+                  airline_id: 1
+                  seat_capacity: 30
                   price: 700000
 
   /flight/delete:
@@ -1786,7 +1715,7 @@ paths:
   /passenger/get:
     get:
       summary: User get the data passenger From Passenger Detail according to the buyer_id (logged user id)
-      operationId: user-save-passenger
+      operationId: user-get-passenger
       security:
         - bearerAuth: []
       tags:
@@ -1939,9 +1868,9 @@ paths:
                   id: 1
 
   /booking/flights:
-    get:
-      summary: User Can get the Flights, Here we need to know who is currently login by using token for getting the `user id` data.
-      operationId: user-create-booking
+    post:
+      summary: User Can get the List of Flights, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-get-flights
       security: 
         - bearerAuth: []
       tags: 
@@ -1959,8 +1888,7 @@ paths:
                     status: true
                     message: Successfully Get Flights 
                     data:
-                      booking_id: 1
-                      booking_code: Z3DPSCTLNK01
+                      flight_id: 1
                       flight_code: DPSCTLNK01
                       departure_iata: CKG
                       departure_icao: WIII                        
@@ -2248,6 +2176,61 @@ paths:
                 value:
                   booking_id: 1 
                   cancel_reason: I can't travel in that period of time, cause my graduation.
+
+  /booking/checkout:
+    post:
+      summary: User Can Checkout the booking and get the tickets in the documents in the column of `document_url` and here we can save the data of booking into `Transactions` by getting the column booking_id, after this it redirects to the ticket.
+      operationId: user-checkout-booking-to-transaction
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Checkout Booking and Create Transaction.
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+                $ref: '#/components/schemas/Transaction'
+              examples:
+                Successfully Checkout Booking:
+                  value:
+                    status: true
+                    message: Successfully Checkout Booking
+                    data:
+                      booking_id: 1
+                      transaction_id: 1
+                      document_url: https://imgur.one/3dxxse23
+                      transaction_status:  Success
+                      total_price: 2100000
+        '400':
+          description: Bad Request Can't Checkout Booking 
+          content:
+            application/json:
+              examples:
+                Message Cannot Create Booking:
+                  value:
+                    status: false
+                    message: Cannot Checkout Booking  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_id: 
+                  type: integer
+                  description: The booking_id to update the status and create the transaction
+              required:
+                - booking_id
+            examples:
+              Checkout Booking :
+                value:
+                  booking_id: 1 
 
   /booking/all:
     get:
