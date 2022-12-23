@@ -1,10 +1,13 @@
 'use strict';
 const moment = require('moment');
 const currentDate = moment().format('YYYY-MM-DD HH:mm:ss');
+const { Booking, BookingDetail } = require('../models');
 module.exports = {
     async up(queryInterface, Sequelize) {
+        const bookings = await Booking.findAll();  
+        const bookingsLength = bookings.length;
         await queryInterface.bulkInsert('Bookings', [{
-            id: 1,
+            id: bookingsLength + 1,
             destination: 1,
             user: 1,
             seat: 3,
@@ -13,7 +16,7 @@ module.exports = {
             createdAt: currentDate,
             updatedAt: currentDate,
         }, {
-            id: 2,
+            id: bookingsLength + 2,
             destination: 1,
             user: 2,
             seat: 2,
@@ -24,16 +27,19 @@ module.exports = {
             }
         ], {});
 
+        const bookingDetails = await BookingDetail.findAll();  
+        const bookingDetailsLength = bookingDetails.length;
+
         await queryInterface.bulkInsert('BookingDetails', [{
-            id: 1,
-            booking_id: 1,
+            id: bookingDetailsLength + 1,
+            booking_id: bookingsLength + 1,
             document_url: "https://image.com/j/231231",
             price_per_seat: 1700000,
             createdAt: currentDate,
             updatedAt: currentDate,
         }, {
-            id: 2,
-            booking_id: 2,
+            id: bookingDetailsLength + 2,
+            booking_id: bookingsLength + 2,
             document_url: "https://image.com/j/331123",
             price_per_seat: 1840000,
             createdAt: currentDate,

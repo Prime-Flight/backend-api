@@ -7,7 +7,7 @@ const middleware = require('../middlewares')
 router.post('/register', controller.auth.register);
 router.post('/login', controller.auth.login);
 router.post('/login/google', controller.auth.google);
-router.get('/whoami', controller.auth.google);
+router.get('/whoami', middleware.restrict, controller.auth.whoami);
 // router.get('/forgot-password', controller.auth.viewForgotPassword);
 router.post('/forgot-password', controller.auth.forgotPassword);
 router.post('/reset-password', controller.auth.resetPassword);

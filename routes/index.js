@@ -8,13 +8,15 @@ const apiDocument = YAML.load('./docs/api-docs.yaml');
 const auth = require('./auth');
 const country = require('./country');
 const flight = require('./flight');
-const middleware = require('../middlewares'); 
+const middleware = require('../middlewares');
 const access = require('../middlewares/access');
 const name = require('../lib/enum');
 const airport = require('./airport');
 const booking = require('./booking');
 const user = require('./user-profile');
 const passenger = require('./passenger')
+
+const userBooking = require('./user-booking')
 
 // for the checker for hello world
 router.get('/', controller.hello);
@@ -32,8 +34,10 @@ router.use('/airport', airport);
 router.use('/booking', booking);
 // user profiles routes
 router.use('/user', user);
-// 
+// smart passenger routes
 router.use('/passenger', passenger);
+// user booking routes
+router.use('/booking', userBooking)
 
 // example on how to use the RBAC
 // below is gonna be true

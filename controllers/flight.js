@@ -6,7 +6,9 @@ const AbortController = globalThis.AbortController || require('abort-controller'
 const controller = new AbortController();
 const timeout = setTimeout(() => { controller.abort(); }, 200000); // timeout above 10000ms
 const { FLIGHT_API_HOST, FLIGHT_API_KEY, HOST } = process.env;
-const { Flight } = require('../db/models');
+const { Flight, Airline } = require('../db/models');
+const { QueryTypes } = require('sequelize');
+const db = require('../db/models');
 const Validator = require('fastest-validator');
 const validator = new Validator;
 module.exports = {
@@ -88,56 +90,61 @@ module.exports = {
 
     getAllFlightDatabase: async (req, res, next) => {
         try {
-            const flight = await Flight.findAll();
-            let flightData = [];
-            flight.forEach(function(data) {
-                let value = {
-                    flight_id: data.id,
-                    flight_code: data.flight_code,
-                    departure: {
-                        departure_iata: data.departure_iata_code,
-                        departure_time: data.departure_time,
-                    },
-                    destination: {
-                        arrival_iata: data.departure_iata_code,
-                        arrival_time: data.departure_time,
-                    },
-                }
-
-                flightData.push(value);
+            const flightInfo =  `
+                    SELECT
+                    "Flights".id AS flight_id,
+                    "Flights".flight_code,
+                    "Flights".departure_iata_code,
+                    "Flights".departure_time,
+                    "Flights".arrival_iata_code,
+                    "Flights".arrival_time,
+                    "Airlines".airline,
+                    "Airlines".airline_code,
+                    "Airlines".airline_logo,
+                    "Flights".seat_capacity,
+                    "Flights".price
+                    FROM "Flights" JOIN "Airlines"
+                    ON "Flights".airline_id = "Airlines".id
+                  `
+            const flight = await db.sequelize.query(flightInfo, {
+                type: QueryTypes.SELECT
             });
+    
             return res.status(200).json({
                 status: true,
                 message: "Successfully get all flight data",
-                data: flightData
+                data: flight
             });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },
     create: async (req, res, next) => {
         try {
-            const { flight_code, departure_iata_code, departure_icao_code, departure_time, arrival_iata_code, arrival_icao_code, arrival_time } = req.body;
+            const { 
+              departure_iata_code, 
+              departure_icao_code, 
+              departure_time, 
+              arrival_iata_code, 
+              arrival_icao_code, 
+              arrival_time,
+              airline_id, 
+              seat_capacity, 
+              price
+            } = req.body;
 
-            const checkFlight = await Flight.findOne({ where: { flight_code: flight_code } });
-
-            // if there's the flight then return bad request response 
-            if (checkFlight) {
-                return res.status(403).json({
-                    status: false,
-                    message: `Flight already created with the code of ${flight_code}, Please Create with another code `,
-                    data: null
-                });
-            }
 
             const schema = {
-                flight_code: 'string',
                 departure_iata_code: 'string',
                 departure_icao_code: 'string',
                 departure_time: 'string',
                 arrival_iata_code: 'string',
                 arrival_icao_code: 'string',
                 arrival_time: 'string',
+                airline_id: 'number',
+                seat_capacity: 'number',
+                price: 'number'
             }
 
             const validate = validator.validate(req.body, schema);
@@ -153,6 +160,23 @@ module.exports = {
                 });
             }
 
+            const airlineData = await Airline.findOne({where : {id: airline_id}});
+
+            const randomNumber = Math.floor(Math.random() * 100);
+
+            const flight_code = departure_iata_code + airlineData.airline_code + arrival_iata_code + randomNumber.toString();
+
+            const checkFlight = await Flight.findOne({ where: { flight_code: flight_code } });
+
+            // if there's the flight then return bad request response 
+            if (checkFlight) {
+                return res.status(403).json({
+                    status: false,
+                    message: `Flight already created with the code of ${flight_code}, Please Create with another code `,
+                    data: null
+                });
+            }
+
             const create_flight = await Flight.create({
                 flight_code,
                 departure_iata_code,
@@ -160,16 +184,42 @@ module.exports = {
                 departure_time,
                 arrival_iata_code,
                 arrival_icao_code,
-                arrival_time
+                arrival_time,
+                airline_id,
+                seat_capacity,
+                price
+            });
+
+            const flightInfo =  `
+                    SELECT
+                    "Flights".id AS flight_id,
+                    "Flights".flight_code,
+                    "Flights".departure_iata_code,
+                    "Flights".departure_time,
+                    "Flights".arrival_iata_code,
+                    "Flights".arrival_time,
+                    "Airlines".airline,
+                    "Airlines".airline_code,
+                    "Airlines".airline_logo,
+                    "Flights".seat_capacity,
+                    "Flights".price
+                    FROM "Flights" JOIN "Airlines"
+                    ON "Flights".airline_id = "Airlines".id
+                    WHERE "Flights".id = ${create_flight.id}
+                  `
+
+            const flight = await db.sequelize.query(flightInfo, {
+                type: QueryTypes.SELECT
             });
 
             return res.status(200).json({
                 status: true,
                 message: "Successfully Create Flight Schedule to Order",
-                data: create_flight
+                data: flight
             });
 
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },
