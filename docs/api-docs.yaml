@@ -385,6 +385,33 @@ components:
         - seat_number
         - booking_detail_id
         - passenger_id
+    Notification:
+      title: Notification
+      type: object
+      description: 'Notificaion is to store the in-app notification'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for SeatNumber
+        recipient_id:
+          type: integer
+          description: Foreign key of User that sending the notification (can be null) 
+        actions:
+          type: string
+          description: What type of action they are doing, such as Booking, Transaction, etc. 
+        message:
+          type: string
+          description: message for the notification. 
+        read:
+          type: boolean
+          description: check if the is already read by user.
+      required:
+        - id
+        - recipient_id
+        - sender_id
+        - actions
+        - message
+        - read
 
 security:
   - bearerAuth: []
@@ -408,6 +435,8 @@ tags:
     description: API for Admin CRUD for the flight schedule API.  
   - name: Admin - Booking
     description: API for Admin CRUD for the Rejecting and Accepting the User Booking.
+  - name: User - Notification
+    description: API for User Notification in their actions.
 
 paths:
   '/auth/register':
@@ -2379,3 +2408,49 @@ paths:
                   booking_id: 1 
                   message: "You can't book this flight because the flight is unavailable"
 
+  /notification/get:
+    get:
+      summary: get this user notification.
+      operationId: user-get-notification
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Notification
+      responses:
+        '200':
+          description: Successfully get notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Notification:
+                  value:
+                    status: true
+                    message: Successfully Get the Notification 
+                    data:
+                      "id": 6
+                      "recipient_id": 2
+                      "actions": "BOOKING"
+                      "message": "You have been Booking the flight of DPSCTNLKCKG01"
+                      "read": false
+                      "createdAt": "2022-12-23T16:19:04.120Z"
+                      "updatedAt": "2022-12-23T16:19:04.120Z"
+        '204':
+          description: Successfully Get Notifications But Empty Notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Bad Request Can't Create Notification
+          content:
+            application/json:
+              examples:
+                Message Cannot Create Notification:
+                  value:
+                    status: false
+                    message: message -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'

@@ -11,6 +11,7 @@
     "@sentry/node": "^7.21.1",
     "@sentry/tracing": "^7.21.1",
     "abort-controller": "^3.0.0",
+    "axios": "^1.2.1",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
@@ -29,6 +30,8 @@
     "passport-jwt": "^4.0.0",
     "pg": "^8.8.0",
     "sequelize": "^6.25.7",
+    "socket.io": "^4.5.4",
+    "socket.io-client": "^4.5.4",
     "swagger-ui-express": "^4.6.0",
     "yamljs": "^0.3.0"
   },
