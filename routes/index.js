@@ -16,6 +16,7 @@ const booking = require('./booking');
 const user = require('./user-profile');
 const userBooking = require('./user-booking');
 const notification = require('./notification');
+const passenger = require('./passenger')
 
 // for the checker for hello world
 router.get('/', controller.hello);
@@ -37,6 +38,8 @@ router.use('/user', user);
 router.use('/notification', notification);
 // user booking routes
 router.use('/booking', userBooking);
+// smart passenger routes
+router.use('/passenger', passenger);
 
 // example on how to use the RBAC
 // below is gonna be true
