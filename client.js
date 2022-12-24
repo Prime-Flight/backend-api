@@ -13,4 +13,5 @@ const token = ''
 const payload = jwt.verify(token, JWT_SIGNATURE_KEY);
 socket.on(`${notificationActions.booking}-${payload.id}`, (data) => { console.log(data) });;
 socket.on(`${notificationActions.transfer}-${payload.id}`, (data) => { console.log(data) });;
+socket.on(`${notificationActions.passenger}-${payload.id}`, (data) => { console.log(data) });;
 
