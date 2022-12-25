@@ -1329,6 +1329,57 @@ paths:
               Delete User Nanda Permana:
                 value:
                   email: nandapermana@gmail.com 
+  /user/upload-profile:
+    post:
+      summary: Update User Profile Picture  
+      operationId: user-upload-profile
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Profile Details 
+      responses:
+        '200':
+          description: Successfully Upload Profile Picture   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Update Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Upload Profile Picture
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: https://ik.imagekit.io/nh5wornpx/nanda-suparman-image_Gi4rVpl47.jpg
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: false
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties: 
+                  media:
+                    type: string
+                    format: binary
 
   /airport/search?keyword={keyword}:
     get:

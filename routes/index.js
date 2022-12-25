@@ -15,7 +15,6 @@ const airport = require('./airport');
 const booking = require('./booking');
 const user = require('./user-profile');
 const passenger = require('./passenger')
-
 const userBooking = require('./user-booking')
 
 // for the checker for hello world

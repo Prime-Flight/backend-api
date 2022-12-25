@@ -1,4 +1,5 @@
 const { User } = require('../db/models');
+const imagekit = require('../utils/imagekit');
 module.exports = {
     getUserDetails: async (req, res, next) => {
         try {
@@ -98,5 +99,44 @@ module.exports = {
         } catch(err) {
             next(err)
         }
-    }
+    },
+    uploadProfilePicture: async (req, res, next) => {
+        try {
+            const { id } = req.user;
+            const file = req.file.buffer.toString("base64");
+
+            const checkUser = await User.findOne({ where: { id: id} });
+
+            if (!checkUser) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Cannot provide Update Profile Information Because it is Unavailable",
+                    data: null
+                });
+            }
+            const profile_picture = await imagekit.upload({
+              file,
+              fileName: req.file.originalname
+            });
+            
+            await User.update({ url_profile_picture: profile_picture.url }, { where: { id: id } });
+
+            const updatedUser = await User.findOne({
+                attributes: [
+                    'name', 'email', 'url_profile_picture', 
+                    'gender', 'nationality', 'phone_number'],
+                where: { id: id }
+            });
+
+            return res.status(200).json({
+                status: true,
+                message: `Successfully Upload Profile Picture`,
+                data: updatedUser
+            });
+        } catch (err) {
+            console.log(err);
+            next(err)
+        }
+    },
+
 }
