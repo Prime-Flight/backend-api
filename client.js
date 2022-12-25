@@ -15,3 +15,6 @@ socket.on(`${notificationActions.booking}-${payload.id}`, (data) => { console.lo
 socket.on(`${notificationActions.transfer}-${payload.id}`, (data) => { console.log(data) });;
 socket.on(`${notificationActions.passenger}-${payload.id}`, (data) => { console.log(data) });;
 
+// must be using the admin payload token
+socket.on(`${notificationActions.user_cancel}-${payload.id}`, (data) => { console.log(data) });;
+

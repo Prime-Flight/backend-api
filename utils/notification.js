@@ -1,12 +1,12 @@
 const notificationActions = require('../lib/notification-actions');
-const { Notification, Booking, Transaction, Passenger } = require('../db/models');
+const { Notification, Booking, Transaction, User } = require('../db/models');
 const { QueryTypes } = require('sequelize');
 const db = require('../db/models');
 module.exports = {
-  booking: async (id, booking_id) => {
+  booking: async (user_id, booking_id) => {
     try {
-      const booking = await Booking.findOne({where: {id: booking_id}});
-      if (!booking) { 
+      const booking = await Booking.findOne({ where: { id: booking_id } });
+      if (!booking) {
         return res.status(400).json({
           status: false,
           message: "Cannot Create, There's no Booking with this booking code"
@@ -14,47 +14,46 @@ module.exports = {
       }
 
       const notification = await Notification.create({
-        recipient_id: id,
+        recipient_id: user_id,
         actions: notificationActions.booking,
         message: `You have book the flight of ${booking.booking_code}`,
         read: false
       });
 
       // send the notification into client
-      global.io.emit(`${notificationActions.booking}-${id}`, notification);
+      global.io.emit(`${notificationActions.booking}-${user_id}`, notification);
 
     } catch (err) {
-      console.log(err);
       next(err);
     }
   },
-  transfer: async (id, booking_id, next) => {
+  transfer: async (user_id, booking_id, next) => {
     try {
 
-      const transfer = await Transaction.findOne({where: {booking_id: booking_id}});
-      if (!transfer) { 
+      const transfer = await Transaction.findOne({ where: { booking_id: booking_id } });
+      if (!transfer) {
         return res.status(400).json({
           status: false,
           message: "Cannot Create, There's no Booking with this transfer code"
         });
       }
 
-      const booking = await Booking.findOne({where: {id: booking_id}});
+      const booking = await Booking.findOne({ where: { id: booking_id } });
 
       const notification = await Notification.create({
-        recipient_id: id,
+        recipient_id: user_id,
         actions: notificationActions.transfer,
         message: `You have paid the flight of ${booking.booking_code}`,
         read: false
       });
 
       // send the notification into client
-      global.io.emit(`${notificationActions.transfer}-${id}`, notification);
+      global.io.emit(`${notificationActions.transfer}-${user_id}`, notification);
     } catch (err) {
       next(err);
     }
   },
-  passenger: async (id, passenger_id) => {
+  passenger: async (user_id, passenger_id) => {
     try {
       const getPassengers = `
           SELECT
@@ -73,12 +72,12 @@ module.exports = {
 
       // query the data using the raw query
       const passenger = await db.sequelize.query(getPassengers, {
-          type: QueryTypes.SELECT
+        type: QueryTypes.SELECT
       });
 
       console.log(passenger);
 
-      if (!passenger) { 
+      if (!passenger) {
         return res.status(400).json({
           status: false,
           message: "Cannot Create, There's no Passenger with this id"
@@ -86,17 +85,44 @@ module.exports = {
       }
 
       const notification = await Notification.create({
-        recipient_id: id,
+        recipient_id: user_id,
         actions: notificationActions.passenger,
         message: `You have added ${passenger[0].name} to your list of passenger`,
         read: false
       });
 
       // send the notification into client
-      global.io.emit(`${notificationActions.passenger}-${id}`, notification);
+      global.io.emit(`${notificationActions.passenger}-${user_id}`, notification);
 
     } catch (err) {
-      console.log(err);
+      next(err);
+    }
+  },
+  user_cancel: async (user_id, booking_id) => {
+    try {
+      const user = await User.findOne({ where: { id: user_id } });
+      const booking = await Booking.findOne({where: { id: booking_id }})
+
+      if (!user) {
+        return res.status(400).json({
+          status: false,
+          message: "There's no passenger with this id"
+        });
+      }
+
+      const notification = await Notification.create({
+        recipient_id: user.id,
+        actions: notificationActions.user_cancel,
+        message: `A user with id ${user.id} has been cancelling the flight with the reason of ${booking.cancel_reason}`,
+        read: false
+      });
+
+      const admin = await User.findOne({ where: { role: 1} });  
+
+      // send the notification into admin client
+      global.io.emit(`${notificationActions.user_cancel}-${admin.id}`, notification);
+
+    } catch (err) {
       next(err);
     }
   },
