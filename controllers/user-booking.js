@@ -10,19 +10,19 @@ module.exports = {
     order: async (req, res, next) => {
 
         try {
-            const { flight_id, passenger_id, seat_total, price } = req.body
+            const { flight_id, passenger_id } = req.body
             let seatNumber, addBookingDetail, addBuyer, addSeat
             const seatAB = 'ABCDEF'
             let a = 0
-            let totalPrice = seat_total * price
+            let departureDate, departureTime, arrivalDate, arrivalTime
 
-            const existFlight = await Flight.findOne({
+            const flight = await Flight.findOne({
                 where: {
                     id: flight_id
                 }
             })
 
-            if (!existFlight) {
+            if (!flight) {
                 return res.status(400).json({
                     status: false,
                     message: 'Cannot create booking because the flight is unavailable',
@@ -30,24 +30,29 @@ module.exports = {
                 })
             }
 
+            departureDate = `${flight.departure_time.getDate()}-${flight.departure_time.getMonth() + 1}-${flight.departure_time.getFullYear()}`
+            departureTime = `${flight.departure_time.getHours()}:${flight.departure_time.getMinutes()}`
+            arrivalDate = `${flight.arrival_time.getDate()}-${flight.arrival_time.getMonth() + 1}-${flight.arrival_time.getFullYear()}`
+            arrivalTime = `${flight.arrival_time.getHours()}:${flight.arrival_time.getMinutes()}`
+
             const addBooking = await Booking.create({
-                destination: existFlight.id,
+                destination: flight.id,
                 user: req.user.id,
-                seat: seat_total,
+                seat: passenger_id.length,
                 status: 'Pending',
-                booking_code: existFlight.flight_code
+                booking_code: flight.flight_code
             })
 
             if (addBooking) {
                 addBookingDetail = await BookingDetail.create({
                     booking_id: addBooking.id,
-                    price_per_seat: price
+                    price_per_seat: flight.price
                 })
                 if (addBookingDetail) {
                     addBuyer = await Buyer.create({
                         booking_detail_id: addBookingDetail.id,
                         user_id: req.user.id,
-                        total_seat: seat_total
+                        total_seat: passenger_id.length
                     })
                     if (addBuyer) {
                         while (a < passenger_id.length) {
@@ -73,16 +78,19 @@ module.exports = {
                             data: {
                                 booking_id: addBooking.id,
                                 booking_code: addBooking.booking_code,
-                                flight_code: existFlight.flight_code,
+                                flight_code: flight.flight_code,
                                 document_url: addBookingDetail.document_url,
-                                departure_iata: existFlight.departure_iata_code,
-                                departure_time: existFlight.departure_time,
-                                arrival_iata: existFlight.arrival_iata_code,
-                                arrival_time: existFlight.arrival_time,
+                                departure_iata: flight.departure_iata_code,
+                                departure_date: departureDate,
+                                departure_time: departureTime,
+                                arrival_iata: flight.arrival_iata_code,
+                                arrival_date: arrivalDate,
+                                arrival_time: arrivalTime,
+                                seat_capacity: flight.seat_capacity,
                                 seat: addBooking.seat,
                                 status: addBooking.status,
                                 price_per_seat: addBookingDetail.price_per_seat,
-                                total_price: totalPrice
+                                total_price: flight.price * passenger_id.length
                             }
                         })
                     }
