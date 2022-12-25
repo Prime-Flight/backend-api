@@ -167,6 +167,8 @@ module.exports = {
         })
 
         if (updateBooking) {
+            // emit the notification into the user.
+            notification.user_cancel(id, booking_id)
             return res.status(200).json({
                 status: false,
                 message: "Successfully Send Request Cancel Booking",

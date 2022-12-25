@@ -10,6 +10,7 @@ const { PORT, HOST } = process.env;
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const notificationActions = require('./lib/notification-actions'); 
+const { User } = require('./db/models');
 
 
 Sentry.init({
