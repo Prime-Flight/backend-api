@@ -35,6 +35,7 @@ module.exports = {
             arrivalDate = `${flight.arrival_time.getDate()}-${flight.arrival_time.getMonth() + 1}-${flight.arrival_time.getFullYear()}`
             arrivalTime = `${flight.arrival_time.getHours()}:${flight.arrival_time.getMinutes()}`
 
+
             const addBooking = await Booking.create({
                 destination: flight.id,
                 user: req.user.id,
@@ -86,11 +87,11 @@ module.exports = {
                                 arrival_iata: flight.arrival_iata_code,
                                 arrival_date: arrivalDate,
                                 arrival_time: arrivalTime,
-                                seat_capacity: flight.seat_capacity,
+                                seat_capacity: flight.seat_capacity - passenger_id.length,
                                 seat: addBooking.seat,
                                 status: addBooking.status,
                                 price_per_seat: addBookingDetail.price_per_seat,
-                                total_price: flight.price * passenger_id.length
+                                total_price: flight.price * passenger_id.length,
                             }
                         })
                     }
