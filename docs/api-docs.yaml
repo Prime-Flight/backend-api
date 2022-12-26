@@ -402,8 +402,6 @@ tags:
     description: User can add passenger data to ease the booking order  
   - name: User - Booking
     description: API for User CRUD Booking.  
-  - name: User - Booking
-    description: API for User CRUD Booking.  
   - name: Admin - Flight Schedule
     description: API for Admin CRUD for the flight schedule API.  
   - name: Admin - Booking
@@ -2256,15 +2254,34 @@ paths:
                       transaction_status:  Success
                       total_price: 2100000
         '400':
-          description: Bad Request Can't Checkout Booking 
+          description: Bad Request Can't Checkout booking, because no booking info 
           content:
             application/json:
               examples:
-                Message Cannot Create Booking:
+                Message Cannot Checkout Booking:
                   value:
                     status: false
-                    message: Cannot Checkout Booking  
+                    message: Cannot checkout booking because no booking info  
                     data: null
+        '403':
+          description: Cannot checkout booking because You are not the authorized user 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Cannot checkout booking because You are not the authorized user  
+                    data: null
+        '409':
+          description: Cannot checkout booking because User already checkout 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Your transaction for booking of DPSCTNLKCKG01 is already Success
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       requestBody:
@@ -2275,13 +2292,13 @@ paths:
               properties:
                 booking_id: 
                   type: integer
-                  description: The booking_id to update the status and create the transaction
+                  description: we get the flight id and then we create the booking 
               required:
                 - booking_id
             examples:
-              Checkout Booking :
+              Get the Booking ID that user want to checkout :
                 value:
-                  booking_id: 1 
+                  booking_id: 1
 
   /booking/all:
     get:

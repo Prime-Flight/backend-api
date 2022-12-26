@@ -171,7 +171,7 @@ module.exports = {
 
         if (updateBooking) {
             return res.status(200).json({
-                status: false,
+                status: true,
                 message: "Successfully Send Request Cancel Booking",
                 data: {
                     booking_id: existBooking.booking_id,
@@ -181,5 +181,76 @@ module.exports = {
                 }
             })
         }
+    },
+  checkout: async(req, res, next) => {
+    try {
+      const { id } = req.user;
+      const { booking_id } = req.body;
+      const checkBooking = await Booking.findOne({ where: { id: booking_id }});
+      if (!checkBooking) { 
+        return res.status(400).json({
+          status: true,
+          message: "Cannot checkout booking because no booking info",
+          data: null
+        });
+      }
+
+      // check the booking is the authorized user to access it.
+      if ( checkBooking.user != id ) {
+        return res.status(403).json({
+          status: true,
+          message: "Cannot checkout booking because You are not the authorized user",
+          data: null
+        });
+      }
+
+      // update the booking status
+      await Booking.update({status: "Success"}, { where: { id: booking_id } }); 
+
+      const query = ` 
+        SELECT
+        "Bookings".id booking_id,
+        "Bookings".seat total_seat,
+        "Bookings".user user_id,
+        "Bookings".status booking_status,
+        "Bookings".booking_code,
+        "BookingDetails".document_url,
+        "BookingDetails".price_per_seat
+        FROM "Bookings" JOIN "BookingDetails" 
+        ON "Bookings".id = "BookingDetails".booking_id 
+        WHERE "Bookings".id = ${booking_id} 
+      `;
+
+      const bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+
+      const checkTransaction = await Transaction.findOne({ where: { booking_id: bookingInfo[0].booking_id }});
+
+      if (checkTransaction != null && checkTransaction.status == "Success") { 
+        return res.status(409).json({ 
+          status: false,
+          message: `Your transaction for booking of ${bookingInfo[0].booking_code} is already Success`
+        })
+      }
+
+      const transaction = await Transaction.create({
+        booking_id: bookingInfo[0].booking_id,
+        total_price: bookingInfo[0].total_seat * bookingInfo[0].price_per_seat,
+        status: "Success"
+      });
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfully Checkout Booking",
+        data: {
+          booking_id: bookingInfo[0].booking_id,
+          transaction: transaction.id,
+          document_url: bookingInfo[0].document_url,
+          transaction_status: transaction.status,
+          total_price: transaction.total_price,
+        }
+      });
+    } catch(err) {
+      next(err);
     }
+  },
 }
