@@ -244,7 +244,7 @@ module.exports = {
         message: "Successfully Checkout Booking",
         data: {
           booking_id: bookingInfo[0].booking_id,
-          transaction: transaction.id,
+          transaction_id: transaction.id,
           document_url: bookingInfo[0].document_url,
           transaction_status: transaction.status,
           total_price: transaction.total_price,
