@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     
-    passenger_category: DataTypes.ENUM('child', 'adult'),
+    passenger_category: DataTypes.ENUM('Child', 'Adult'),
     
     passenger_detail: {
       type: DataTypes.INTEGER,
