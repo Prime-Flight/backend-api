@@ -17,6 +17,7 @@ const user = require('./user-profile');
 const userBooking = require('./user-booking');
 const notification = require('./notification');
 const passenger = require('./passenger')
+const userBooking = require('./user-booking')
 
 // for the checker for hello world
 router.get('/', controller.hello);
