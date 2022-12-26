@@ -385,6 +385,33 @@ components:
         - seat_number
         - booking_detail_id
         - passenger_id
+    Notification:
+      title: Notification
+      type: object
+      description: 'Notificaion is to store the in-app notification'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for SeatNumber
+        recipient_id:
+          type: integer
+          description: Foreign key of User that sending the notification (can be null) 
+        actions:
+          type: string
+          description: What type of action they are doing, such as Booking, Transaction, etc. 
+        message:
+          type: string
+          description: message for the notification. 
+        read:
+          type: boolean
+          description: check if the is already read by user.
+      required:
+        - id
+        - recipient_id
+        - sender_id
+        - actions
+        - message
+        - read
 
 security:
   - bearerAuth: []
@@ -402,12 +429,12 @@ tags:
     description: User can add passenger data to ease the booking order  
   - name: User - Booking
     description: API for User CRUD Booking.  
-  - name: User - Booking
-    description: API for User CRUD Booking.  
   - name: Admin - Flight Schedule
     description: API for Admin CRUD for the flight schedule API.  
   - name: Admin - Booking
     description: API for Admin CRUD for the Rejecting and Accepting the User Booking.
+  - name: User - Notification
+    description: API for User Notification in their actions.
 
 paths:
   '/auth/register':
@@ -478,16 +505,12 @@ paths:
                   type: string
                 nationality: 
                   type: string
-                access_token:
-                  type: string
-                  description: get the access token from front end.
               required:
                 - name
                 - email
                 - password
                 - gender
                 - nationality
-                - access_token
             examples:
               Create Nanda Suparman:
                 value:
@@ -496,7 +519,6 @@ paths:
                   password: super-secret-password
                   gender: Male
                   nationality: Indonesian
-                  access_token: <Access Token From Client>
 
   /auth/login:
     post:
@@ -1995,21 +2017,22 @@ paths:
                     status: true
                     message: Successfully Create Booking 
                     data:
-                      booking_id: 8
-		                  booking_code: DPSQGCKG01
-		                  flight_code: DPSQGCKG01
-		                  document_url: https://imgur.one/3dxxse23
-		                  departure_iata: DPS
-		                  departure_date: 12-10-2022
-		                  departure_time: "0:12"
-		                  arrival_iata: CKG
-		                  arrival_date: 12-10-2022
-		                  arrival_time: "1:12"
-		                  seat_capacity: 100
-		                  seat: 2
-		                  status": Pending
-		                  price_per_seat: 1500000
-		                  total_price: 3000000  
+                     booking_id: 8
+                     booking_code: DPSQGCKG01
+                     flight_code: DPSQGCKG01
+                     document_url: https://imgur.one/3dxxse23
+                     departure_iata: DPS
+                     departure_date: "12-10-2022"
+                     departure_time: "0:12"
+                     arrival_iata: CKG
+                     arrival_date: "12-10-2022"
+                     arrival_time: "1:12"
+                     seat_capacity: 100
+                     seat: 2
+                     status: Pending
+                     price_per_seat: 1500000
+                     total_price: 3000000
+                      
         '400':
           description: Bad Request Can't Create booking No Flight Info
           content:
@@ -2254,15 +2277,34 @@ paths:
                       transaction_status:  Success
                       total_price: 2100000
         '400':
-          description: Bad Request Can't Checkout Booking 
+          description: Bad Request Can't Checkout booking, because no booking info 
           content:
             application/json:
               examples:
-                Message Cannot Create Booking:
+                Message Cannot Checkout Booking:
                   value:
                     status: false
-                    message: Cannot Checkout Booking  
+                    message: Cannot checkout booking because no booking info  
                     data: null
+        '403':
+          description: Cannot checkout booking because You are not the authorized user 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Cannot checkout booking because You are not the authorized user  
+                    data: null
+        '409':
+          description: Cannot checkout booking because User already checkout 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Your transaction for booking of DPSCTNLKCKG01 is already Success
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       requestBody:
@@ -2273,13 +2315,13 @@ paths:
               properties:
                 booking_id: 
                   type: integer
-                  description: The booking_id to update the status and create the transaction
+                  description: we get the flight id and then we create the booking 
               required:
                 - booking_id
             examples:
-              Checkout Booking :
+              Get the Booking ID that user want to checkout :
                 value:
-                  booking_id: 1 
+                  booking_id: 1
 
   /booking/all:
     get:
@@ -2428,3 +2470,49 @@ paths:
                   booking_id: 1 
                   message: "You can't book this flight because the flight is unavailable"
 
+  /notification/get:
+    get:
+      summary: get this user notification.
+      operationId: user-get-notification
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Notification
+      responses:
+        '200':
+          description: Successfully get notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Notification:
+                  value:
+                    status: true
+                    message: Successfully Get the Notification 
+                    data:
+                      "id": 6
+                      "recipient_id": 2
+                      "actions": "BOOKING"
+                      "message": "You have been Booking the flight of DPSCTNLKCKG01"
+                      "read": false
+                      "createdAt": "2022-12-23T16:19:04.120Z"
+                      "updatedAt": "2022-12-23T16:19:04.120Z"
+        '204':
+          description: Successfully Get Notifications But Empty Notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Bad Request Can't Create Notification
+          content:
+            application/json:
+              examples:
+                Message Cannot Create Notification:
+                  value:
+                    status: false
+                    message: message -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'

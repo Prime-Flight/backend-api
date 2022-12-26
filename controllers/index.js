@@ -5,6 +5,7 @@ const flight = require('./flight');
 const booking = require('./booking');
 const userBooking = require('./user-booking');
 const userProfile = require('./user-profile');
+const notification = require('./notification');
 const passenger = require('./passenger')
 module.exports = {
     hello: (req, res, next) => {
@@ -19,5 +20,5 @@ module.exports = {
         }
     },
 
-    auth, country, airport, flight, booking, userBooking, userProfile, passenger
+    auth, country, airport, flight, booking, userBooking, userProfile, notification, passenger
 }

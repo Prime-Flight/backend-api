@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
     booking_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: true},
+      unique: true
+    },
     total_price: DataTypes.FLOAT,
     status: DataTypes.ENUM('Rejected', 'Pending', 'Success')
   }, {

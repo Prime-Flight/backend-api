@@ -14,8 +14,9 @@ const name = require('../lib/enum');
 const airport = require('./airport');
 const booking = require('./booking');
 const user = require('./user-profile');
+const userBooking = require('./user-booking');
+const notification = require('./notification');
 const passenger = require('./passenger')
-const userBooking = require('./user-booking')
 
 // for the checker for hello world
 router.get('/', controller.hello);
@@ -33,10 +34,12 @@ router.use('/airport', airport);
 router.use('/booking', booking);
 // user profiles routes
 router.use('/user', user);
+// notification routes 
+router.use('/notification', notification);
+// user booking routes
+router.use('/booking', userBooking);
 // smart passenger routes
 router.use('/passenger', passenger);
-// user booking routes
-router.use('/booking', userBooking)
 
 // example on how to use the RBAC
 // below is gonna be true
