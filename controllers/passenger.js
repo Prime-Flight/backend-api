@@ -1,6 +1,7 @@
 const { User, Passenger, PassengerDetail } = require('../db/models');
 const { QueryTypes } = require('sequelize');
 const db = require('../db/models');
+const notification = require('../utils/notification');
 
 module.exports = {
     save: async (req, res, next) => {
@@ -30,8 +31,10 @@ module.exports = {
                 passenger_category,
                 passenger_detail: passengerDetail.id
             });
+            
+            notification.passenger(user.id, passenger.id);
 
-            return res.status(201).json({
+            return res.status(200).json({
                 status: true,
                 message: "success",
                 data: {

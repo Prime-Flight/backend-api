@@ -6,6 +6,8 @@ const { QueryTypes } = require('sequelize')
 
 const v = new Validator
 
+const notification = require('../utils/notification');
+
 module.exports = {
     order: async (req, res, next) => {
 
@@ -72,6 +74,9 @@ module.exports = {
                                 a++
                             }
                         }
+
+                        // emit notification when booking
+                        notification.booking(req.user.id, addBooking.id);
 
                         return res.status(200).json({
                             status: true,
@@ -171,6 +176,8 @@ module.exports = {
         })
 
         if (updateBooking) {
+            // emit the notification into the user.
+            notification.user_cancel(id, booking_id)
             return res.status(200).json({
                 status: true,
                 message: "Successfully Send Request Cancel Booking",

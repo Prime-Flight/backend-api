@@ -6,9 +6,12 @@ const morgan = require('morgan');
 const methodOverride = require('method-override');
 const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
-const { PORT } = process.env;
+const { PORT, HOST } = process.env;
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const notificationActions = require('./lib/notification-actions'); 
+const { User } = require('./db/models');
+
 
 Sentry.init({
   dsn: "https://5e67869c400345c9ade926085aba0ecd@o4504071404126208.ingest.sentry.io/4504219923972096",
@@ -55,5 +58,16 @@ app.use(function onError(err, req, res, next) {
   });
 });
 
-app.listen(PORT, console.log(`Running on port = ${PORT}`));
+const server = app.listen(PORT, console.log(`Running on port = ${PORT}`));
+
+// create the socket
+const io = require('socket.io')(server, {
+  cors: {
+    origin: HOST,
+    methods: ["GET", "POST"]
+  }
+});
+
+// set to io library into global
+global.io = io
 
