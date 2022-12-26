@@ -1903,40 +1903,31 @@ paths:
         - User - Passenger Data
       responses:
         '200':
-          description: Successfully Save Passenger Data
+          description: Successfully Delete Passenger Data
           content:  
             application/json:
               schemas:
                 $ref: '#/components/schemas/Passenger'
                 $ref: '#/components/schemas/PassengerDetail'
               examples:
-                Successfully Save Abel Jollando Data:
+                Successfully Delete Abel Jollando Data:
                   value:  
                     status: true
                     message: Successfully Delete Passenger Data
-                    data: 
-                      id: 1
-                Successfully Save Abel Jollando Data Without Passport:
-                  value:  
-                    status: true
-                    message: Successfully Delete Passenger Data
-                    data: 
-                      id: 1
           '401':
             $ref: '#/components/responses/UnauthorizedError'
+
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                id: integer
-                description: the id of the passenger 
+                passenger_id: 
+                  type: integer
+                  description: User can add the name of the passenger.
             examples:
-              Save Abel Jollando with passport number:
-                value:
-                  id: 1
-              Save Abel Jollando without passport number:
+              Delete Passenger:
                 value:
                   id: 1
 
