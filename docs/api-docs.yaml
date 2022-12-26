@@ -2000,14 +2000,14 @@ paths:
 		     flight_code: DPSQGCKG01
 		     document_url: https://imgur.one/3dxxse23
 		     departure_iata: DPS
-		     departure_date: 12-10-2022
+		     departure_date: "12-10-2022"
 		     departure_time: "0:12"
 		     arrival_iata: CKG
-		     arrival_date: 12-10-2022
+		     arrival_date: "12-10-2022"
 		     arrival_time: "1:12"
 		     seat_capacity: 100
 		     seat: 2
-		     status": Pending
+		     status: Pending
 		     price_per_seat: 1500000
 		     total_price: 3000000
                       
