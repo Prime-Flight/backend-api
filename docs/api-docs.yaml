@@ -1811,20 +1811,21 @@ paths:
                     status: true
                     message: Successfully Create Booking 
                     data:
-                      booking_id: 1
-                      booking_code: Z3DPSCTLNK01
-                      flight_code: DPSCTLNK01
-                      document_url: https://imgur.one/3dxxse23
-                      departure_iata: CKG
-                      departure_iata: WIII                        
-                      departure_time: "2022-09-10 20:00:00"
-                      arrival_iata: DPS
-                      arrival_iata: WDDD
-                      arrival_time: "2022-09-10 23:00:00"
-                      seat: 3
-                      status: pending
-                      price_per_seat: 700000
-                      total_price: 2100000
+                     booking_id: 8,
+		                 booking_code: DPSQGCKG01,
+		                 flight_code: DPSQGCKG01,
+		                 document_url: https://imgur.one/3dxxse23,
+		                 departure_iata: DPS,
+		                 departure_date: 12-10-2022,
+		                 departure_time: 0:12,
+		                 arrival_iata: CKG,
+		                 arrival_date: 12-10-2022,
+		                 arrival_time: 1:12,
+		                 seat_capacity: 100,
+		                 seat: 2,
+		                 status": Pending,
+		                 price_per_seat: 1500000,
+		                 total_price: 3000000
                       
         '400':
           description: Bad Request Can't Create booking No Flight Info
@@ -1852,9 +1853,8 @@ paths:
             examples:
               Get the Flight ID from flight that admin created :
                 value:
-                  flight_id: 3 
-                  passenger_id: [1, 3, 4]  
-                  seat_total: 3 
+                  flight_id: 1 
+                  passenger_id: [1,2]   
 
   /booking/mybooking:
     get:
