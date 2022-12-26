@@ -101,8 +101,51 @@ module.exports = {
             console.log(err)
             next(err)
         }
+    },
 
+    flights: async (req, res, next) => {
+        try {
+            const { departure_iata, arrival_iata, flight_date } = req.body
+            const query = `
+            SELECT
+            "Flights".id AS flight_id,
+            "Flights".flight_code,
+            "Flights".departure_iata_code AS departure_iata,
+            "Flights".departure_icao_code AS departure_icao,
+            "Flights".departure_time,
+            "Flights".arrival_iata_code AS arrival_iata,
+            "Flights".arrival_icao_code AS arrival_icao,
+            "Flights".arrival_time,
+            "Airlines".airline,
+            "Airlines".airline_code,
+            "Airlines".airline_logo,
+            "Flights".seat_capacity,
+            "Flights".price
+            FROM "Flights" JOIN "Airlines"
+            ON "Flights".airline_id = "Airlines".id AND "Flights".departure_iata_code = ${departure_iata} AND "Flights".arrival_iata_code = ${arrival_iata} AND "Flights".departure_time = flight_date
+          `
+            const flight = await db.sequelize.query(query, {
+                type: QueryTypes.SELECT
+            });
 
+            if (!flight) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Flight is unavailable"
+                })
+            }
+            if (flight) {
+                return res.status(200).json({
+                    status: true,
+                    message: "FLights is available",
+                    data: flight
+                })
+            }
+        } catch (err) {
+            console.log(err)
+            next(err)
+
+        }
     },
 
     myBooking: async (req, res, next) => {
