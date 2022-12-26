@@ -505,16 +505,12 @@ paths:
                   type: string
                 nationality: 
                   type: string
-                access_token:
-                  type: string
-                  description: get the access token from front end.
               required:
                 - name
                 - email
                 - password
                 - gender
                 - nationality
-                - access_token
             examples:
               Create Nanda Suparman:
                 value:
@@ -523,7 +519,6 @@ paths:
                   password: super-secret-password
                   gender: Male
                   nationality: Indonesian
-                  access_token: <Access Token From Client>
 
   /auth/login:
     post:
