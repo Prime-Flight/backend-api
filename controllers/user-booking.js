@@ -106,12 +106,85 @@ module.exports = {
             console.log(err)
             next(err)
         }
-
-
     },
 
+    flights: async (req, res, next) => {
+        try {
+            const { departure_iata, arrival_iata, flight_date } = req.body
+            const [date, time] = flight_date.split('T')
+
+            let limit = parseInt(req.query.record)
+            let page = parseInt(req.query.page)
+            let start = (page - 1) * limit
+            let end = page * limit
+
+            let query = `SELECT "Flights".id AS flight_id,
+            "Flights".flight_code,
+            "Flights".departure_iata_code AS departure_iata,
+            "Flights".departure_icao_code AS departure_icao,
+            "Flights".departure_date,
+            "Flights".departure_time,
+            "Flights".arrival_iata_code AS arrival_iata,
+            "Flights".arrival_icao_code AS arrival_icao,
+            "Flights".arrival_date,
+            "Flights".arrival_time,
+            "Airlines".airline,
+            "Airlines".airline_code,
+            "Airlines".airline_logo,
+            "Flights".seat_capacity,
+            "Flights".price
+            FROM "Flights" JOIN "Airlines" 
+            ON "Flights".airline_id = "Airlines".id WHERE departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_date = '${date}' LIMIT ${start},${limit}`
+
+            const flight = await db.sequelize.query(query, {
+                type: QueryTypes.SELECT
+            });
+            if (!flight) {
+                return res.status(400).json({
+                    status: false,
+                    message: "Flight is unavailable"
+                })
+            }
+
+            let count = `SELECT count(*) FROM "Flights" JOIN "Airlines"
+            ON "Flights".airline_id = "Airlines".id WHERE
+            departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_time = '${flight_date}'`
+
+            const dataCount = await db.sequelize.query(count, { type: QueryTypes.SELECT })
+
+            let countFiltered = dataCount
+            let pagination = {}
+            pagination.totalRow = dataCount
+            pagination.totalPage = Math.ceil(countFiltered / limit)
+            if (end < countFiltered) {
+                pagination.next = {
+                    page: page + 1,
+                    limit
+
+                }
+            }
+            if (start > 0) {
+                pagination.prev = {
+                    page: page - 1,
+                    limit
+                }
+            }
+
+            return res.status(200).json({
+                status: true,
+                message: "FLights is available",
+                pagination,
+                data: flight
+            })
+
+        } catch (err) {
+            console.log(err)
+            next(err)
+        }
+    },
     myBooking: async (req, res, next) => {
         try {
+
             const query = ` SELECT
             "Bookings".id AS booking_id,
                 "Bookings".booking_code,
@@ -190,32 +263,32 @@ module.exports = {
             })
         }
     },
-  checkout: async(req, res, next) => {
-    try {
-      const { id } = req.user;
-      const { booking_id } = req.body;
-      const checkBooking = await Booking.findOne({ where: { id: booking_id }});
-      if (!checkBooking) { 
-        return res.status(400).json({
-          status: true,
-          message: "Cannot checkout booking because no booking info",
-          data: null
-        });
-      }
+    checkout: async (req, res, next) => {
+        try {
+            const { id } = req.user;
+            const { booking_id } = req.body;
+            const checkBooking = await Booking.findOne({ where: { id: booking_id } });
+            if (!checkBooking) {
+                return res.status(400).json({
+                    status: true,
+                    message: "Cannot checkout booking because no booking info",
+                    data: null
+                });
+            }
 
-      // check the booking is the authorized user to access it.
-      if ( checkBooking.user != id ) {
-        return res.status(403).json({
-          status: true,
-          message: "Cannot checkout booking because You are not the authorized user",
-          data: null
-        });
-      }
+            // check the booking is the authorized user to access it.
+            if (checkBooking.user != id) {
+                return res.status(403).json({
+                    status: true,
+                    message: "Cannot checkout booking because You are not the authorized user",
+                    data: null
+                });
+            }
 
-      // update the booking status
-      await Booking.update({status: "Success"}, { where: { id: booking_id } }); 
+            // update the booking status
+            await Booking.update({ status: "Success" }, { where: { id: booking_id } });
 
-      const query = ` 
+            const query = ` 
         SELECT
         "Bookings".id booking_id,
         "Bookings".seat total_seat,
@@ -229,36 +302,36 @@ module.exports = {
         WHERE "Bookings".id = ${booking_id} 
       `;
 
-      const bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+            const bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
 
-      const checkTransaction = await Transaction.findOne({ where: { booking_id: bookingInfo[0].booking_id }});
+            const checkTransaction = await Transaction.findOne({ where: { booking_id: bookingInfo[0].booking_id } });
 
-      if (checkTransaction != null && checkTransaction.status == "Success") { 
-        return res.status(409).json({ 
-          status: false,
-          message: `Your transaction for booking of ${bookingInfo[0].booking_code} is already Success`
-        })
-      }
+            if (checkTransaction != null && checkTransaction.status == "Success") {
+                return res.status(409).json({
+                    status: false,
+                    message: `Your transaction for booking of ${bookingInfo[0].booking_code} is already Success`
+                })
+            }
 
-      const transaction = await Transaction.create({
-        booking_id: bookingInfo[0].booking_id,
-        total_price: bookingInfo[0].total_seat * bookingInfo[0].price_per_seat,
-        status: "Success"
-      });
+            const transaction = await Transaction.create({
+                booking_id: bookingInfo[0].booking_id,
+                total_price: bookingInfo[0].total_seat * bookingInfo[0].price_per_seat,
+                status: "Success"
+            });
 
-      return res.status(200).json({
-        status: true,
-        message: "Successfully Checkout Booking",
-        data: {
-          booking_id: bookingInfo[0].booking_id,
-          transaction_id: transaction.id,
-          document_url: bookingInfo[0].document_url,
-          transaction_status: transaction.status,
-          total_price: transaction.total_price,
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Checkout Booking",
+                data: {
+                    booking_id: bookingInfo[0].booking_id,
+                    transaction_id: transaction.id,
+                    document_url: bookingInfo[0].document_url,
+                    transaction_status: transaction.status,
+                    total_price: transaction.total_price,
+                }
+            });
+        } catch (err) {
+            next(err);
         }
-      });
-    } catch(err) {
-      next(err);
-    }
-  },
+    },
 }
