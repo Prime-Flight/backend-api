@@ -1839,7 +1839,7 @@ paths:
                     status: true
                     message: Successfully Save Passenger Data
                     data:
-                      id: 1
+                      passenger_id: 1
                       buyer_id: 1
                       passenger_category: adult
                       name: Abel Jollando
@@ -1851,7 +1851,7 @@ paths:
                     status: true
                     message: Successfully Save Passenger Data
                     data:
-                      id: 1
+                      passenger_id: 1
                       buyer_id: 1
                       passenger_category: adult
                       name: Abel Jollando Maulana
@@ -1866,6 +1866,9 @@ paths:
             schema:
               type: object
               properties:
+                passenger_id:
+                  type: integer
+                  description: Passenger id to get the data.  
                 name: 
                   type: string
                   description: User can add the name of the passenger.
@@ -1881,6 +1884,7 @@ paths:
             examples:
               Update Abel Jollando passport number:
                 value:
+                  passenger_id: 1
                   passenger_category: adult
                   name: Abel Jollando
                   nik: "32700333111111"
@@ -1888,6 +1892,7 @@ paths:
                   gender: Male
               Update Abel Jollando Name:
                 value:
+                  passenger_id: 1
                   passenger_category: adult
                   name: Abel Jollando Maulana
                   nik: "32700333111111"
