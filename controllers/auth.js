@@ -11,6 +11,8 @@ const { AbortError } = require('node-fetch');
 const AbortController = globalThis.AbortController || require('abort-controller');
 const controller = new AbortController();
 const timeout = setTimeout(() => { controller.abort(); }, 10000); // timeout above 10000ms
+const notification = require('../utils/notification')
+
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -73,6 +75,7 @@ module.exports = {
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
+            Notification.verify_email(addUser.id)
             return res.status(201).json({
                 status: true,
                 message: 'Successfully Registered With Email',
@@ -342,16 +345,16 @@ module.exports = {
             // console.log(err);
         }
     },
-    whoami: (req, res, next) => { 
-      try { 
-        const user = req.user;
-        return res.status(200).json({
-          status: true,
-          message: "Successfully Get Current User",
-          data: user
-        });
-      } catch(err) { 
-        next(err);
-      }
+    whoami: (req, res, next) => {
+        try {
+            const user = req.user;
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Get Current User",
+                data: user
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 }

@@ -101,7 +101,7 @@ module.exports = {
   user_cancel: async (user_id, booking_id) => {
     try {
       const user = await User.findOne({ where: { id: user_id } });
-      const booking = await Booking.findOne({where: { id: booking_id }})
+      const booking = await Booking.findOne({ where: { id: booking_id } })
 
       if (!user) {
         return res.status(400).json({
@@ -117,7 +117,7 @@ module.exports = {
         read: false
       });
 
-      const admin = await User.findOne({ where: { role: 1} });  
+      const admin = await User.findOne({ where: { role: 1 } });
 
       // send the notification into admin client
       global.io.emit(`${notificationActions.user_cancel}-${admin.id}`, notification);
@@ -126,5 +126,30 @@ module.exports = {
       next(err);
     }
   },
+
+  verify_email: async (req, res, next, user_id) => {
+    try {
+      const user = await User.findOne({ where: { id: user_id } })
+      if (!user) {
+        return res.status(400).json({
+          status: false,
+          message: 'user is not found'
+        })
+      }
+
+      if (user) {
+        const notif = await Notification.create({
+          recipient_id: user.id,
+          actions: notificationActions.verify_email,
+          message: `We have sent a verification email to your email. Please verify that the email you used to register is your correct email`,
+          read: false
+        })
+        global.io.emit(`${notificationActions.verify_email}-${user_id}`, notif)
+      }
+    } catch (err) {
+      console.log(err)
+      next(err)
+    }
+  }
 }
 
