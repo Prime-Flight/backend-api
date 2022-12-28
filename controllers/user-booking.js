@@ -110,23 +110,22 @@ module.exports = {
 
     flights: async (req, res, next) => {
         try {
-            const { departure_iata, arrival_iata, flight_date } = req.body
-            const [date, time] = flight_date.split('T')
+            const { departure_iata, arrival_iata, flight_date, page, record } = req.query
+            date1 = `${flight_date} 00:00:01`
+            date2 = `${flight_date} 23:59:59`
 
-            let limit = parseInt(req.query.record)
-            let page = parseInt(req.query.page)
-            let start = (page - 1) * limit
-            let end = page * limit
+            let limit = parseInt(record)
+            let pages = parseInt(page)
+            let start = (pages - 1) * limit
+            let end = pages * limit
 
             let query = `SELECT "Flights".id AS flight_id,
             "Flights".flight_code,
             "Flights".departure_iata_code AS departure_iata,
             "Flights".departure_icao_code AS departure_icao,
-            "Flights".departure_date,
             "Flights".departure_time,
             "Flights".arrival_iata_code AS arrival_iata,
             "Flights".arrival_icao_code AS arrival_icao,
-            "Flights".arrival_date,
             "Flights".arrival_time,
             "Airlines".airline,
             "Airlines".airline_code,
@@ -134,7 +133,7 @@ module.exports = {
             "Flights".seat_capacity,
             "Flights".price
             FROM "Flights" JOIN "Airlines" 
-            ON "Flights".airline_id = "Airlines".id WHERE departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_date = '${date}' LIMIT ${start},${limit}`
+            ON "Flights".airline_id = "Airlines".id WHERE departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_time BETWEEN '${date1}' AND '${date2}' LIMIT ${limit} OFFSET ${start}`
 
             const flight = await db.sequelize.query(query, {
                 type: QueryTypes.SELECT
@@ -148,24 +147,24 @@ module.exports = {
 
             let count = `SELECT count(*) FROM "Flights" JOIN "Airlines"
             ON "Flights".airline_id = "Airlines".id WHERE
-            departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_time = '${flight_date}'`
+            departure_iata_code = '${departure_iata}' AND arrival_iata_code = '${arrival_iata}' AND departure_time BETWEEN '${date1}' AND '${date2}'`
 
             const dataCount = await db.sequelize.query(count, { type: QueryTypes.SELECT })
 
-            let countFiltered = dataCount
+            let countFiltered = dataCount[0].count
             let pagination = {}
-            pagination.totalRow = dataCount
+            pagination.totalRow = dataCount[0].count
             pagination.totalPage = Math.ceil(countFiltered / limit)
             if (end < countFiltered) {
                 pagination.next = {
-                    page: page + 1,
+                    page: pages + 1,
                     limit
 
                 }
             }
             if (start > 0) {
                 pagination.prev = {
-                    page: page - 1,
+                    page: pages - 1,
                     limit
                 }
             }
