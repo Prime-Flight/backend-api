@@ -75,7 +75,7 @@ module.exports = {
 
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
 
-            Notification.verify_email(addUser.id)
+            notification.verify_email(addUser.id)
             return res.status(201).json({
                 status: true,
                 message: 'Successfully Registered With Email',
