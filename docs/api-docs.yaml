@@ -1936,9 +1936,35 @@ paths:
                 value:
                   id: 1
 
-  /booking/flights:
-    post:
+  /booking/flights/search?departure_iata={departure_iata}&arrival_iata={arrival_iata}&flight_date={flight_date}&page={page}&record={record}:
+    get:
       summary: User Can get the List of Flights, Here we need to know who is currently login by using token for getting the `user id` data.
+      parameters:
+        - in: query
+          name: departure_iata
+          schema:
+            type: string
+          required: true 
+        - in: query
+          name: arrival_iata
+          schema:
+            type: string
+          required: true 
+        - in: query
+          name: flight_date
+          schema:
+            type: date
+          required: true 
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: true 
+        - in: query
+          name: record
+          schema:
+            type: integer
+          required: true 
       operationId: user-get-flights
       security: 
         - bearerAuth: []
@@ -1970,27 +1996,27 @@ paths:
                       airline_logo: https://imgur.one/23123123
                       seat_capacity: 150
                       price: 700000
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                departure_iata: 
-                  type: string
-                  description: the id of departure airport 
-                arrival_iata: 
-                  type: string
-                  description: the id of arrival airport 
-                flight_date: 
-                  type: date
-                  description: departure flight date 
-            examples:
-              Get the Flight From the User Searches :
-                value:
-                  departure_iata: JKT
-                  arrival_iata: DPS
-                  flight_date:  "2022-09-10 20:00" 
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           departure_iata: 
+      #             type: string
+      #             description: the id of departure airport 
+      #           arrival_iata: 
+      #             type: string
+      #             description: the id of arrival airport 
+      #           flight_date: 
+      #             type: date
+      #             description: departure flight date 
+      #       examples:
+      #         Get the Flight From the User Searches :
+      #           value:
+      #             departure_iata: JKT
+      #             arrival_iata: DPS
+      #             flight_date:  "2022-09-10 20:00" 
 
   /booking/order:
     post:
