@@ -49,6 +49,7 @@ module.exports = {
             });
 
         } catch (err) {
+            
             next(err);
         }
     },
@@ -86,5 +87,103 @@ module.exports = {
             console.log(err);
             next(err);
         }
-    }
+    },
+    update: async (req, res, next) => {
+        try {
+            const { id } = req.user;
+
+            const user = await User.findOne({ where: { id: id } });
+
+            if (!user) {
+                return res.status(404).json({
+                    status: false,
+                    message: `user with id ${id} is doesn't exist`,
+                    data: null
+                });
+            }
+
+            const { passenger_id, name, nik, passport_number, gender, passenger_category } = req.body;
+
+            const passengerId = await Passenger.findOne({ where: { id: passenger_id } });
+
+            if (!passengerId) {
+                return res.status(404).json({
+                    status: false,
+                    message: `passenger with id ${passenger_id} is doesn't exist`,
+                    data: null
+                });
+            }
+
+            const passengerDetail = await PassengerDetail.update({
+                name: name,
+                nik: nik,
+                passport_number: passport_number,
+                gender:gender
+            },
+            {
+                where: {id:passengerId.passenger_detail}
+            });
+
+            const passenger = await Passenger.update({
+                passenger_category:passenger_category
+            },
+            {
+                where: {id:passenger_id}
+            });
+
+            const passengerUpdateDetail = await PassengerDetail.findOne({ where: { id: passengerId.passenger_detail } });
+            const passengerUpdate = await Passenger.findOne({ where: { id: passenger_id } });
+
+            return res.status(200).json({
+                status: true,
+                message: "success",
+                data: {
+                    id: passengerUpdate.id,
+                    buyer_id: passengerUpdate.buyer_id,
+                    passengger_category: passengerUpdate.passenger_category,
+                    name: passengerUpdateDetail.name,
+                    nik: passengerUpdateDetail.nik,
+                    passport_number: passengerUpdateDetail.passport_number,
+                    gender: passengerUpdateDetail.gender 
+                }
+            });
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    },
+    delete: async (req, res, next) => {
+        try {
+            const { id } = req.body;
+            const passenger = await Passenger.findOne({ where: { id: id}});
+            if (!passenger) {
+                return res.status(404).json({
+                    status: false,
+                    message: `user with id ${id} is doesn't exist`,
+                    data: null
+                });
+            }
+
+            // raw query string
+            const getPassengers = `
+            DELETE FROM "PassengerDetails" WHERE "PassengerDetails".id = ${passenger.passenger_detail};
+            DELETE FROM "Passengers" WHERE "Passengers".id = ${passenger.id};`
+
+            // query the data using the raw query
+            await db.sequelize.query(getPassengers, {
+                type: QueryTypes.DELETE
+            });
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Delete Passenger",
+                data: {
+                    id:id
+                }
+            });
+            
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    },
 };
