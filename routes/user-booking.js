@@ -13,4 +13,5 @@ router.post('/flights', middleware.restrict, controller.userBooking.flights);
 router.post('/checkout', middleware.restrict, controller.userBooking.checkout);
 router.get('/my-transaction', middleware.restrict, controller.userBooking.getHistory);
 
+
 module.exports = router;
