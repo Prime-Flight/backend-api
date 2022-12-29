@@ -2440,6 +2440,58 @@ paths:
                       total_price: 2100000
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /booking/details/:booking_id:
+    get:
+      summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      parameters:
+        - in: path
+          name: booking_id
+          schema:
+            type: integer
+          required: true
+          description: ID for the Booking to get the Details
+      operationId: admin-get-booking-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Get Booking Details   
+          content:
+            application/json:
+              schemas:
+                type: array
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Details:
+                  value:
+                    status: true
+                    message: Successfully Get All Booking 
+                    data:
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Abel Jollando"
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Daniel Manurung"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   /booking/accept:
     post:
       summary: Admin Can Accept Booking, Here we need to know who is currently login by using token for getting the `user id` data.

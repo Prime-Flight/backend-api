@@ -62,6 +62,48 @@ module.exports = {
             next(err);
         }
     },
+    getBookingDetails: async (req, res, next) => {
+        try {
+            const { booking_id } = req.params;
+            // raw query string
+            const getBookingWithDetails = `
+              select
+                  "Bookings".status,
+                  "Bookings".seat,
+                  "BookingDetails".price_per_seat,
+                  "Flights".departure_time,
+                  "Flights".departure_iata_code,
+                  "Flights".arrival_time,
+                  "Flights".arrival_iata_code,
+                  "Passengers".passenger_category,
+                  "PassengerDetails".gender,
+                  "PassengerDetails"."name"
+              from
+                  "BookingDetails"
+                  join "Bookings" on "BookingDetails".booking_id = "Bookings".id 
+                  join "Flights" on "Bookings".destination = "Flights".id
+                  join "Passengers" on "Passengers".buyer_id  = "Bookings"."user"
+                  join "PassengerDetails" on "PassengerDetails".id = "Passengers".passenger_detail
+              WHERE
+                "Bookings".id = 18
+            `
+
+            // query the data using the raw query
+            var booking = await db.sequelize.query(getBookingWithDetails, {
+                type: QueryTypes.SELECT
+            });
+
+
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Get Booking Details",
+                data: booking
+            });
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    },
     acceptUserBooking: async (req, res, next) => {
         try {
             const { booking_id } = req.body;

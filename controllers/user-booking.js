@@ -7,7 +7,7 @@ const { QueryTypes } = require('sequelize')
 const v = new Validator
 
 const notification = require('../utils/notification');
-const ticket = require('../utils/ticket');
+// const ticket = require('../utils/ticket');
 const lib = require('../lib');
 
 module.exports = {
