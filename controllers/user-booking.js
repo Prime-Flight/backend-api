@@ -7,6 +7,8 @@ const { QueryTypes } = require('sequelize')
 const v = new Validator
 
 const notification = require('../utils/notification');
+const ticket = require('../utils/ticket');
+const lib = require('../lib');
 
 module.exports = {
     order: async (req, res, next) => {
@@ -289,20 +291,41 @@ module.exports = {
             await Booking.update({ status: "Success" }, { where: { id: booking_id } });
 
             const query = ` 
-        SELECT
-        "Bookings".id booking_id,
-        "Bookings".seat total_seat,
-        "Bookings".user user_id,
-        "Bookings".status booking_status,
-        "Bookings".booking_code,
-        "BookingDetails".document_url,
-        "BookingDetails".price_per_seat
-        FROM "Bookings" JOIN "BookingDetails" 
-        ON "Bookings".id = "BookingDetails".booking_id 
-        WHERE "Bookings".id = ${booking_id} 
-      `;
+              SELECT
+                  "Bookings".id booking_id,
+                  "Bookings".seat total_seat,
+                  "Bookings".user user_id,
+                  "Bookings".status booking_status,
+                  "Bookings".booking_code,
+                  "BookingDetails".document_url,
+                  "BookingDetails".price_per_seat,
+                  "Flights".flight_code,
+                  "Airlines".airline,
+                  "Airlines".airline_code,
+                  "Flights".departure_iata_code,
+                  TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm') as departure_time,
+                  "Flights".arrival_iata_code,
+                  "PassengerDetails".name
+              FROM
+                  "Bookings"
+                  JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
+                  JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
+                  JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
+                  JOIN "Flights" ON "Flights".id = "Bookings".destination
+                  JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
+              WHERE
+                  "Bookings"."user" = ${id} 
+                  AND "Bookings".id = ${booking_id};
+              `;
 
-            const bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+            let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+
+            bookingInfo = bookingInfo[0];
+            // generate the ticket
+            // ticketResult = await ticket.generateTicket('ticket.ejs', { bookingInfo});
+
+
+            // await BookingDetail.update({document_url: ticketUpload.url }, {where: { booking_id: bookingInfo[0].booking_id }});
 
             const checkTransaction = await Transaction.findOne({ where: { booking_id: bookingInfo[0].booking_id } });
 
@@ -319,19 +342,66 @@ module.exports = {
                 status: "Success"
             });
 
-            return res.status(200).json({
-                status: true,
-                message: "Successfully Checkout Booking",
-                data: {
-                    booking_id: bookingInfo[0].booking_id,
-                    transaction_id: transaction.id,
-                    document_url: bookingInfo[0].document_url,
-                    transaction_status: transaction.status,
-                    total_price: transaction.total_price,
-                }
-            });
-        } catch (err) {
-            next(err);
+
+      // return res.render('ticket/ticket.ejs', { bookingInfo});
+
+      return res.status(200).json({
+        status: true,
+        message: "Successfully Checkout Booking",
+        // data: ticketResult
+        data: {
+          booking_id: bookingInfo[0].booking_id,
+          transaction_id: transaction.id,
+          document_url: ticketUpload.url,
+          transaction_status: transaction.status,
+          total_price: transaction.total_price,
         }
-    },
+      });
+    } catch(err) {
+      console.log(err);
+      next(err);
+    }
+  },
+  getHistory: async(req, res, next) => { 
+    try { 
+      const { id } = req.user;
+      const query = `
+        SELECT
+            "Bookings".id booking_id,
+            "Bookings".seat total_seat,
+            "Bookings".user user_id,
+            "Bookings".status booking_status,
+            "Bookings".booking_code,
+            "BookingDetails".document_url,
+            "BookingDetails".price_per_seat,
+            "Flights".flight_code,
+            "Airlines".airline,
+            "Airlines".airline_code,
+            "Flights".departure_iata_code,
+            "Flights".arrival_iata_code,
+            TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm'),
+            "PassengerDetails".name,
+            "Transactions".status,
+            "Transactions".total_price
+        FROM
+            "Bookings"
+            JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
+            JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
+            JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
+            JOIN "Flights" ON "Flights".id = "Bookings".destination
+            JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
+            JOIN "Transactions" ON "Transactions".booking_id = "Bookings".id
+        WHERE
+            "Bookings"."user" = ${id}; 
+      `
+            let transactionHistory = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+      return res.status(200).json({
+        status: true, 
+        message: "Successfully Get Transaction History",
+        data: transactionHistory
+      });
+    } catch(err) { 
+      next(err);
+    }
+  }
 }
