@@ -18,38 +18,52 @@ module.exports = {
                     data: null
                 });
             }
-
-            const passengerDetail = await PassengerDetail.create({
-                name,
-                nik,
-                passport_number,
-                gender
-            });
-
-            const passenger = await Passenger.create({
-                buyer_id: user.id,
-                passenger_category,
-                passenger_detail: passengerDetail.id
-            });
             
-            notification.passenger(user.id, passenger.id);
-
-            return res.status(200).json({
-                status: true,
-                message: "success",
-                data: {
-                    id: passenger.id,
-                    buyer_id: passenger.buyer_id,
-                    passengger_category: passengerDetail.passenger_category,
-                    name: passengerDetail.name,
-                    nik: passengerDetail.nik,
-                    passport_number: passengerDetail.passport_number,
-                    gender: passengerDetail.gender 
-                }
+            const passengerExists = await PassengerDetail.findOne({
+              where : { nik: nik }
             });
+            console.log(`THE PASSENGER` + passengerExists);
+
+            if(passengerExists) { 
+              return res.status(403).json({ 
+                    status: false,
+                    message: `passenger with name ${passengerExists.name} and nik ${passengerExists.nik} is already registered`,
+                    data: null
+              });
+            } else { 
+              const passengerDetail = await PassengerDetail.create({
+                  name,
+                  nik,
+                  passport_number,
+                  gender
+              });
+
+              const passenger = await Passenger.create({
+                  buyer_id: id,
+                  passenger_category,
+                  passenger_detail: passengerDetail.id
+              });
+              
+              notification.passenger(user.id, passenger.id);
+
+              return res.status(200).json({
+                  status: true,
+                  message: "success",
+                  data: {
+                      id: passenger.id,
+                      buyer_id: passenger.buyer_id,
+                      passengger_category: passengerDetail.passenger_category,
+                      name: passengerDetail.name,
+                      nik: passengerDetail.nik,
+                      passport_number: passengerDetail.passport_number,
+                      gender: passengerDetail.gender 
+                  }
+              });
+            }
+
 
         } catch (err) {
-            
+            console.log(err); 
             next(err);
         }
     },

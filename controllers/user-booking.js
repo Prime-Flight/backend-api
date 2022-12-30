@@ -89,7 +89,7 @@ module.exports = {
                         }
 
                         // emit notification when booking
-                        notification.booking(req.user.id, addBooking.id);
+                        await notification.booking(req.user.id, addBooking.id);
 
                         return res.status(200).json({
                             status: true,
@@ -260,7 +260,7 @@ module.exports = {
 
         if (updateBooking) {
             // emit the notification into the user.
-            notification.user_cancel(id, booking_id)
+            await notification.user_cancel(id, booking_id)
             return res.status(200).json({
                 status: true,
                 message: "Successfully Send Request Cancel Booking",
@@ -328,7 +328,7 @@ module.exports = {
 
             let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
 
-            bookingInfo = bookingInfo[0];
+            // bookingInfo = bookingInfo[0];
             // generate the ticket
             // ticketResult = await ticket.generateTicket('ticket.ejs', { bookingInfo});
 
@@ -351,12 +351,13 @@ module.exports = {
             });
 
 
+            await notification.transfer(id, bookingInfo[0].booking_id);
             // return res.render('ticket/ticket.ejs', { bookingInfo});
 
             return res.status(200).json({
                 status: true,
                 message: "Successfully Checkout Booking",
-                // data: ticketResult
+                // data: bookingInfo
                 data: {
                     booking_id: bookingInfo[0].booking_id,
                     transaction_id: transaction.id,
