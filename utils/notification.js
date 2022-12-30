@@ -136,7 +136,7 @@ module.exports = {
     }
   },
 
-  verify_email: async (req, res, next, user_id) => {
+  verify_email: async (user_id) => {
     return async (req, res, next) => {
       try {
         const user = await User.findOne({ where: { id: user_id } })
