@@ -5,8 +5,8 @@ const controller = require('../controllers');
 const middleware = require('../middlewares');
 
 router.post('/save', middleware.restrict, controller.passenger.save);
-router.get('/get/', middleware.restrict, controller.passenger.get);
-// router.get('/update', controller.passenger.update);
-// router.get('/delete', controller.passenger.delete);
+router.get('/get', middleware.restrict, controller.passenger.get);
+router.put('/update', middleware.restrict, controller.passenger.update);
+router.delete('/delete', middleware.restrict, controller.passenger.delete);
 
 module.exports = router;
