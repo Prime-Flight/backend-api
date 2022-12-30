@@ -1953,7 +1953,7 @@ paths:
         - in: query
           name: flight_date
           schema:
-            type: date
+            type: string
           required: true 
         - in: query
           name: page
