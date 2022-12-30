@@ -169,15 +169,15 @@ module.exports = {
                 }
             }
 
-            for (let i = 0; i < flight; i++) {
-                let departureDate = `${flight[i].departure_time.getUTCDate()}-${flight[i].departure_time.getUTCMonth() + 1}-${flight[i].departure_time.getUTCFullYear()}`
-                let departureTime = `${flight[i].departure_time.getUTCHours()}:${flight[i].departure_time.getUTCMinutes()}`
-                let arrivalDate = `${flight[i].arrival_time.getUTCDate()}-${flight[i].arrival_time.getUTCMonth() + 1}-${flight[i].arrival_time.getUTCFullYear()}`
-                let arrivalTime = `${flight[i].arrival_time.getUTCHours()}:${flight[i].arrival_time.getUTCMinutes()}`
+            // for (let i = 0; i < flight; i++) {
+            //     let departureDate = `${flight[i].departure_time.getUTCDate()}-${flight[i].departure_time.getUTCMonth() + 1}-${flight[i].departure_time.getUTCFullYear()}`
+            //     let departureTime = `${flight[i].departure_time.getUTCHours()}:${flight[i].departure_time.getUTCMinutes()}`
+            //     let arrivalDate = `${flight[i].arrival_time.getUTCDate()}-${flight[i].arrival_time.getUTCMonth() + 1}-${flight[i].arrival_time.getUTCFullYear()}`
+            //     let arrivalTime = `${flight[i].arrival_time.getUTCHours()}:${flight[i].arrival_time.getUTCMinutes()}`
 
-                delete flight[i].departure_time
-                delete flight[i].depar
-            }
+            //     delete flight[i].departure_time
+            //     delete flight[i].arrival_time
+            // }
             return res.status(200).json({
                 status: true,
                 message: "FLights is available",
