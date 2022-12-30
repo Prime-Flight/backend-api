@@ -32,10 +32,10 @@ module.exports = {
                 })
             }
 
-            departureDate = `${flight.departure_time.getDate()}-${flight.departure_time.getMonth() + 1}-${flight.departure_time.getFullYear()}`
-            departureTime = `${flight.departure_time.getHours()}:${flight.departure_time.getMinutes()}`
-            arrivalDate = `${flight.arrival_time.getDate()}-${flight.arrival_time.getMonth() + 1}-${flight.arrival_time.getFullYear()}`
-            arrivalTime = `${flight.arrival_time.getHours()}:${flight.arrival_time.getMinutes()}`
+            departureDate = `${flight.departure_time.UtCgetDate()}-${flight.departure_time.getUtCMonth() + 1}-${flight.departure_time.getUtCFullYear()}`
+            departureTime = `${flight.departure_time.getUtCHours()}:${flight.departure_time.getUtCMinutes()}`
+            arrivalDate = `${flight.arrival_time.getUtCDate()}-${flight.arrival_time.getUtCMonth() + 1}-${flight.arrival_time.getUtCFullYear()}`
+            arrivalTime = `${flight.arrival_time.getUtCHours()}:${flight.arrival_time.getUtCMinutes()}`
 
 
             const addBooking = await Booking.create({
@@ -111,8 +111,8 @@ module.exports = {
     flights: async (req, res, next) => {
         try {
             const { departure_iata, arrival_iata, flight_date, page, record } = req.query
-            date1 = `${flight_date} 00:00:01`
-            date2 = `${flight_date} 23:59:59`
+            const date1 = `${flight_date} 00:00:01`
+            const date2 = `${flight_date} 23:59:59`
 
             let limit = parseInt(record)
             let pages = parseInt(page)
@@ -169,6 +169,15 @@ module.exports = {
                 }
             }
 
+            for (let i = 0; i < flight; i++) {
+                let departureDate = `${flight[i].departure_time.getUTCDate()}-${flight[i].departure_time.getUTCMonth() + 1}-${flight[i].departure_time.getUTCFullYear()}`
+                let departureTime = `${flight[i].departure_time.getUTCHours()}:${flight[i].departure_time.getUTCMinutes()}`
+                let arrivalDate = `${flight[i].arrival_time.getUTCDate()}-${flight[i].arrival_time.getUTCMonth() + 1}-${flight[i].arrival_time.getUTCFullYear()}`
+                let arrivalTime = `${flight[i].arrival_time.getUTCHours()}:${flight[i].arrival_time.getUTCMinutes()}`
+
+                delete flight[i].departure_time
+                delete flight[i].depar
+            }
             return res.status(200).json({
                 status: true,
                 message: "FLights is available",
