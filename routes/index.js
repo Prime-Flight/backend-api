@@ -48,5 +48,6 @@ router.get('/access', middleware.restrict, access(name.modules.userDashboard, tr
 // this cannot be accessed by user
 router.get('/access-false', middleware.restrict, access(name.modules.userDashboard), controller.hello);
 
+router.get('/truncate/seatNumber', controller.truncate.seatNumber)
 
 module.exports = router;
