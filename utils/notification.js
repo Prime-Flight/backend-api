@@ -4,14 +4,11 @@ const { QueryTypes } = require('sequelize');
 const db = require('../db/models');
 module.exports = {
   booking: async (user_id, booking_id) => {
-    return async (req, res, next) => {
+    return new Promise(async(resolve, reject) => { 
       try {
         const booking = await Booking.findOne({ where: { id: booking_id } });
         if (!booking) {
-          return res.status(400).json({
-            status: false,
-            message: "Cannot Create, There's no Booking with this booking code"
-          });
+          return reject("There's no booking ID") 
         }
 
         const notification = await Notification.create({
@@ -24,21 +21,18 @@ module.exports = {
         // send the notification into client
         global.io.emit(`${notificationActions.booking}-${user_id}`, notification);
 
+        resolve(notification.message);
       } catch (err) {
-        next();
+        return reject(err);
       }
-    }
-
+    })
   },
   transfer: async (user_id, booking_id) => {
-    return async (req, res, next) => {
+    return new Promise(async(resolve, reject) => { 
       try {
         const transfer = await Transaction.findOne({ where: { booking_id: booking_id } });
         if (!transfer) {
-          return res.status(400).json({
-            status: false,
-            message: "Cannot Create, There's no Booking with this transfer code"
-          });
+          return reject("Cannot Create, There's no Booking with this transfer code")
         }
 
         const booking = await Booking.findOne({ where: { id: booking_id } });
@@ -53,13 +47,12 @@ module.exports = {
         // send the notification into client
         global.io.emit(`${notificationActions.transfer}-${user_id}`, notification);
       } catch (err) {
-        next(err);
+        return reject(err);
       }
-    }
-
+    });
   },
   passenger: async (user_id, passenger_id) => {
-    return async (req, res, next) => {
+    return new Promise(async(resolve, reject) => { 
       try {
         const getPassengers = `
           SELECT
@@ -84,10 +77,7 @@ module.exports = {
         console.log(passenger);
 
         if (!passenger) {
-          return res.status(400).json({
-            status: false,
-            message: "Cannot Create, There's no Passenger with this id"
-          });
+          return reject("Cannot Create, There's no Passenger with this id") 
         }
 
         const notification = await Notification.create({
@@ -101,21 +91,18 @@ module.exports = {
         global.io.emit(`${notificationActions.passenger}-${user_id}`, notification);
 
       } catch (err) {
-        next(err);
+        return reject(err);
       }
-    }
+    });
   },
   user_cancel: async (user_id, booking_id) => {
-    return async (req, res, next) => {
+    return new Promise(async(resolve, reject) => { 
       try {
         const user = await User.findOne({ where: { id: user_id } });
         const booking = await Booking.findOne({ where: { id: booking_id } })
 
         if (!user) {
-          return res.status(400).json({
-            status: false,
-            message: "There's no passenger with this id"
-          });
+          return reject("There's no passenger with this id") 
         }
 
         const notification = await Notification.create({
@@ -131,20 +118,17 @@ module.exports = {
         global.io.emit(`${notificationActions.user_cancel}-${admin.id}`, notification);
 
       } catch (err) {
-        next(err);
+        return reject(err);
       }
-    }
+    })
   },
 
   verify_email: async (user_id) => {
-    return async (req, res, next) => {
+    return new Promise(async(resolve, reject) => { 
       try {
         const user = await User.findOne({ where: { id: user_id } })
         if (!user) {
-          return res.status(400).json({
-            status: false,
-            message: 'user is not found'
-          })
+          return reject('user is not found'); 
         }
 
         if (user) {
@@ -157,10 +141,9 @@ module.exports = {
           global.io.emit(`${notificationActions.verify_email}-${user_id}`, notif)
         }
       } catch (err) {
-        console.log(err)
-        next(err)
+        return reject(err)
       }
-    }
+    });
   }
 }
 
