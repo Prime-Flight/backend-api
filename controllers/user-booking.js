@@ -15,7 +15,7 @@ module.exports = {
 
         try {
             const { flight_id, passenger_id } = req.body
-            let seatNumber, addBookingDetail, addBuyer, addSeat
+            let addBookingDetail, addBuyer, addSeat
             const seatAB = 'ABCDEF'
             let numSeat = 0
 
@@ -61,7 +61,7 @@ module.exports = {
                         for (let i = 1; i <= 32; i++) {
                             for (let j = 0; j < seatAB.length; j++) {
                                 let seat = `${seatAB.charAt(j)}-${i}`
-                                const checkSeat = await SeatNumber.findOne({ where: { seat_number: seat, booking_detail_id: addBookingDetail.id } })
+                                const checkSeat = await SeatNumber.findOne({ where: { seat_number: seat, flightId: flight.id } })
                                 if (!checkSeat) {
                                     numSeat = numSeat + 1
                                     seatArr.push(seat)
@@ -74,13 +74,15 @@ module.exports = {
                                 break
                             }
                         }
-
+                        console.log(`test ini id nya : ${flight.id}`)
                         if (numSeat == passenger_id.length) {
                             for (let i = 0; i < seatArr.length; i++) {
-                                addSeat = await SeatNumber.create({
+                                await SeatNumber.create({
                                     seat_number: seatArr[i],
                                     booking_detail_id: addBookingDetail.id,
                                     passenger_id: passenger_id[i],
+                                    flightId: flight.id,
+
                                 })
                             }
 
