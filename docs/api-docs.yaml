@@ -1936,7 +1936,7 @@ paths:
                 value:
                   id: 1
 
-  /booking/flights/search?departure_iata={departure_iata}&arrival_iata={arrival_iata}&flight_date={flight_date}&page={page}&record={record}:
+  /booking/flights/search?departure_iata={departure_iata}&arrival_iata={arrival_iata}&flight_date={flight_date}&seat_total={seat_total}&page={page}&record={record}:
     get:
       summary: User Can get the List of Flights, Here we need to know who is currently login by using token for getting the `user id` data.
       parameters:
@@ -1954,6 +1954,11 @@ paths:
           name: flight_date
           schema:
             type: string
+          required: true 
+        - in: query
+          name: seat_total
+          schema:
+            type: integer
           required: true 
         - in: query
           name: page
@@ -1981,21 +1986,40 @@ paths:
                 Successfully Get the Flight:
                   value:
                     status: true
-                    message: Successfully Get Flights 
+                    message: Successfully Get Flights
+                    pagination: 
+                      totalRow: 7
+                      totalPage: 4
+                      next:
+                        page: 2
+                        limit: 2
                     data:
-                      flight_id: 1
-                      flight_code: DPSCTLNK01
-                      departure_iata: CKG
-                      departure_icao: WIII                        
-                      departure_time: "2022-09-10 20:00:00"
-                      arrival_iata: DPS
-                      arrival_icao: WDDD
-                      arrival_time: "2022-09-10 23:00:00"
-                      airline: Citilink
-                      airline_code: CTLNK
-                      airline_logo: https://imgur.one/23123123
-                      seat_capacity: 150
-                      price: 700000
+                      - flight_id: 8
+                        flight_code: BDGSLDPS01
+                        departure_iata: BDG
+                        departure_icao: WIDD                        
+                        departure_time: "2022-12-12T10:12:00.000Z"
+                        arrival_iata: DPS
+                        arrival_icao: WDDD
+                        arrival_time: "2022-11-12T12:11:00.000Z"
+                        airline: Lion Air
+                        airline_code: SL
+                        airline_logo: https://ik.imagekit.io/nh5wornpx/Prime_Flight_Airlines/lion_air.png
+                        seat_capacity: 150
+                        price: 1300000
+                      - flight_id: 9
+                        flight_code: BDGGADPS01
+                        departure_iata: BDG
+                        departure_icao: WIDD                        
+                        departure_time: "2022-12-12T10:10:00.000Z"
+                        arrival_iata: DPS
+                        arrival_icao: WDDD
+                        arrival_time: "2022-11-12T12:12:00.000Z"
+                        airline: Garuda Indonesia
+                        airline_code: GA
+                        airline_logo: https://ik.imagekit.io/nh5wornpx/Prime_Flight_Airlines/garuda_indonesia.png
+                        seat_capacity: 90
+                        price: 134200     
       # requestBody:
       #   content:
       #     application/json:
