@@ -18,7 +18,7 @@ socket.on(`${notificationActions.passenger}-${payload.id}`, (data) => { console.
 // must be using the admin payload token
 socket.on(`${notificationActions.user_cancel}-${payload.id}`, (data) => { console.log(data) });;
 
-socket.on(`${notificationAction.verify_email}-${payload.id}`, (data) => {
+socket.on(`${notificationActions.verify_email}-${payload.id}`, (data) => {
     console.log(data)
 })
 

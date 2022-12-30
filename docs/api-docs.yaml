@@ -2105,20 +2105,20 @@ paths:
                     status: true
                     message: Successfully Get My Booking 
                     data:
-                      booking_id: 1
-                      booking_code: Z3DPSCTLNK01
-                      flight_code: DPSCTLNK01
-                      document_url: https://imgur.one/3dxxse23
-                      departure_iata: CKG
-                      departure_iata: WIII                        
-                      departure_time: "2022-09-10 20:00:00"
-                      arrival_iata: DPS
-                      arrival_iata: WDDD
-                      arrival_time: "2022-09-10 23:00:00"
-                      seat: 3
-                      status: pending
-                      price_per_seat: 700000
-                      total_price: 2100000
+                      - booking_id: 1
+                        booking_code: Z3DPSCTLNK01
+                        flight_code: DPSCTLNK01
+                        document_url: https://imgur.one/3dxxse23
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                        seat: 3
+                        status: pending
+                        price_per_seat: 700000
+                        total_price: 2100000
         '400':
           description: Bad Request Can't Get booking booking Info
           content:
@@ -2345,6 +2345,61 @@ paths:
                 value:
                   booking_id: 1
 
+  /booking/my-transaction:
+    get:
+      summary: User Can Get Transaction History.
+      operationId: user--booking-to-transaction
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Checkout Booking and Create Transaction.
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+                $ref: '#/components/schemas/Transaction'
+              examples: 
+                Get History Booking:
+                  value:
+                    status: true
+                    message: Successfully Get My Transaction 
+                    data:
+                      - "booking_id": 13
+                        "total_seat": 3
+                        "user_id": 3
+                        "booking_status": "Success"
+                        "booking_code": "BDGGADPS01"
+                        "document_url": null
+                        "price_per_seat": 134200
+                        "flight_code": "BDGGADPS01"
+                        "airline": "Garuda Indonesia"
+                        "airline_code": "GA"
+                        "departure_iata_code": "BDG"
+                        "arrival_iata_code": "DPS"
+                        "to_char": "2022-11-12 10:11"
+                        "name": "Abel Jollando"
+                        "status": "Success"
+                        "total_price": 402600
+                      - "booking_id": 18
+                        "total_seat": 2
+                        "user_id": 3
+                        "booking_status": "Success"
+                        "booking_code": "DPSQGCKG01"
+                        "document_url": null
+                        "price_per_seat": 1500000
+                        "flight_code": "DPSQGCKG01"
+                        "airline": "Citilink"
+                        "airline_code": "QG"
+                        "departure_iata_code": "DPS"
+                        "arrival_iata_code": "CKG"
+                        "to_char": "2022-10-12 12:10"
+                        "name": "Daniel Manurung"
+                        "status": "Success"
+                        "total_price": 3000000
+
   /booking/all:
     get:
       summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
@@ -2383,6 +2438,58 @@ paths:
                       status: pending
                       price_per_seat: 700000
                       total_price: 2100000
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /booking/details/:booking_id:
+    get:
+      summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      parameters:
+        - in: path
+          name: booking_id
+          schema:
+            type: integer
+          required: true
+          description: ID for the Booking to get the Details
+      operationId: admin-get-booking-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Get Booking Details   
+          content:
+            application/json:
+              schemas:
+                type: array
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Details:
+                  value:
+                    status: true
+                    message: Successfully Get All Booking 
+                    data:
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Abel Jollando"
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Daniel Manurung"
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   /booking/accept:
