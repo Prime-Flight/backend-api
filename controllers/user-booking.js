@@ -18,7 +18,6 @@ module.exports = {
             let seatNumber, addBookingDetail, addBuyer, addSeat
             const seatAB = 'ABCDEF'
             let a = 0
-            let departureDate, departureTime, arrivalDate, arrivalTime
 
             const flight = await Flight.findOne({
                 where: {
@@ -33,12 +32,6 @@ module.exports = {
                     data: null
                 })
             }
-
-            departureDate = `${flight.departure_time.UtCgetDate()}-${flight.departure_time.getUtCMonth() + 1}-${flight.departure_time.getUtCFullYear()}`
-            departureTime = `${flight.departure_time.getUtCHours()}:${flight.departure_time.getUtCMinutes()}`
-            arrivalDate = `${flight.arrival_time.getUtCDate()}-${flight.arrival_time.getUtCMonth() + 1}-${flight.arrival_time.getUtCFullYear()}`
-            arrivalTime = `${flight.arrival_time.getUtCHours()}:${flight.arrival_time.getUtCMinutes()}`
-
 
             const addBooking = await Booking.create({
                 destination: flight.id,
@@ -76,7 +69,8 @@ module.exports = {
                                 a++
                             }
                         }
-
+                        let seatCapacity = flight.seat_capacity - passenger_id.length
+                        await Flight.update({ seat_capacity: seatCapacity }, { where: { id: flight.id } })
                         // emit notification when booking
                         notification.booking(req.user.id, addBooking.id);
 
@@ -89,11 +83,9 @@ module.exports = {
                                 flight_code: flight.flight_code,
                                 document_url: addBookingDetail.document_url,
                                 departure_iata: flight.departure_iata_code,
-                                departure_date: departureDate,
-                                departure_time: departureTime,
+                                departure_time: flight.departure_time,
                                 arrival_iata: flight.arrival_iata_code,
-                                arrival_date: arrivalDate,
-                                arrival_time: arrivalTime,
+                                arrival_time: flight.arrival_time,
                                 seat_capacity: flight.seat_capacity - passenger_id.length,
                                 seat: addBooking.seat,
                                 status: addBooking.status,
@@ -171,15 +163,6 @@ module.exports = {
                 }
             }
 
-            // for (let i = 0; i < flight; i++) {
-            //     let departureDate = `${flight[i].departure_time.getUTCDate()}-${flight[i].departure_time.getUTCMonth() + 1}-${flight[i].departure_time.getUTCFullYear()}`
-            //     let departureTime = `${flight[i].departure_time.getUTCHours()}:${flight[i].departure_time.getUTCMinutes()}`
-            //     let arrivalDate = `${flight[i].arrival_time.getUTCDate()}-${flight[i].arrival_time.getUTCMonth() + 1}-${flight[i].arrival_time.getUTCFullYear()}`
-            //     let arrivalTime = `${flight[i].arrival_time.getUTCHours()}:${flight[i].arrival_time.getUTCMinutes()}`
-
-            //     delete flight[i].departure_time
-            //     delete flight[i].arrival_time
-            // }
             return res.status(200).json({
                 status: true,
                 message: "FLights is available",
@@ -351,29 +334,29 @@ module.exports = {
             });
 
 
-      // return res.render('ticket/ticket.ejs', { bookingInfo});
+            // return res.render('ticket/ticket.ejs', { bookingInfo});
 
-      return res.status(200).json({
-        status: true,
-        message: "Successfully Checkout Booking",
-        // data: ticketResult
-        data: {
-          booking_id: bookingInfo[0].booking_id,
-          transaction_id: transaction.id,
-          document_url: ticketUpload.url,
-          transaction_status: transaction.status,
-          total_price: transaction.total_price,
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Checkout Booking",
+                // data: ticketResult
+                data: {
+                    booking_id: bookingInfo[0].booking_id,
+                    transaction_id: transaction.id,
+                    document_url: ticketUpload.url,
+                    transaction_status: transaction.status,
+                    total_price: transaction.total_price,
+                }
+            });
+        } catch (err) {
+            console.log(err);
+            next(err);
         }
-      });
-    } catch(err) {
-      console.log(err);
-      next(err);
-    }
-  },
-  getHistory: async(req, res, next) => { 
-    try { 
-      const { id } = req.user;
-      const query = `
+    },
+    getHistory: async (req, res, next) => {
+        try {
+            const { id } = req.user;
+            const query = `
         SELECT
             "Bookings".id booking_id,
             "Bookings".seat total_seat,
@@ -403,13 +386,13 @@ module.exports = {
             "Bookings"."user" = ${id}; 
       `
             let transactionHistory = await db.sequelize.query(query, { type: QueryTypes.SELECT });
-      return res.status(200).json({
-        status: true, 
-        message: "Successfully Get Transaction History",
-        data: transactionHistory
-      });
-    } catch(err) { 
-      next(err);
+            return res.status(200).json({
+                status: true,
+                message: "Successfully Get Transaction History",
+                data: transactionHistory
+            });
+        } catch (err) {
+            next(err);
+        }
     }
-  }
 }
