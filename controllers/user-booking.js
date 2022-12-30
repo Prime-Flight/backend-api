@@ -15,9 +15,9 @@ module.exports = {
 
         try {
             const { flight_id, passenger_id } = req.body
-            let seatNumber, addBookingDetail, addBuyer, addSeat
+            let addBookingDetail, addBuyer, addSeat
             const seatAB = 'ABCDEF'
-            let a = 0
+            let numSeat = 0
 
             const flight = await Flight.findOne({
                 where: {
@@ -53,24 +53,41 @@ module.exports = {
                         total_seat: passenger_id.length
                     })
                     if (addBuyer) {
-                        while (a < passenger_id.length) {
-                            let randomAB = seatAB.charAt(Math.floor(Math.random() * seatAB.length))
-                            let nomor = Math.floor(Math.random() * 10) + 1
-                            seatNumber = randomAB + nomor
+                        let seatArr = []
 
-                            const seat = await SeatNumber.findOne({ where: { seat_number: seatNumber } })
-
-                            if (!seat) {
-                                addSeat = SeatNumber.create({
-                                    seat_number: seatNumber,
-                                    booking_detail_id: addBookingDetail.id,
-                                    passenger_id: passenger_id[a],
-                                })
-                                a++
-                            }
-                        }
                         let seatCapacity = flight.seat_capacity - passenger_id.length
                         await Flight.update({ seat_capacity: seatCapacity }, { where: { id: flight.id } })
+
+                        for (let i = 1; i <= 32; i++) {
+                            for (let j = 0; j < seatAB.length; j++) {
+                                let seat = `${seatAB.charAt(j)}-${i}`
+                                const checkSeat = await SeatNumber.findOne({ where: { seat_number: seat, flight_id: flight.id } })
+                                if (!checkSeat) {
+                                    numSeat = numSeat + 1
+                                    seatArr.push(seat)
+                                    if (numSeat == passenger_id.length) {
+                                        break
+                                    }
+                                }
+                            }
+                            if (numSeat == passenger_id.length) {
+                                break
+                            }
+                        }
+                        console.log(`test ini id nya : ${flight.id}`)
+                        if (numSeat == passenger_id.length) {
+                            for (let i = 0; i < seatArr.length; i++) {
+                                await SeatNumber.create({
+                                    seat_number: seatArr[i],
+                                    booking_detail_id: addBookingDetail.id,
+                                    passenger_id: passenger_id[i],
+                                    flight_id: flight.id,
+
+                                })
+                            }
+
+                        }
+
                         // emit notification when booking
                         notification.booking(req.user.id, addBooking.id);
 
@@ -86,7 +103,7 @@ module.exports = {
                                 departure_time: flight.departure_time,
                                 arrival_iata: flight.arrival_iata_code,
                                 arrival_time: flight.arrival_time,
-                                seat_capacity: flight.seat_capacity - passenger_id.length,
+                                seat_capacity: seatCapacity,
                                 seat: addBooking.seat,
                                 status: addBooking.status,
                                 price_per_seat: addBookingDetail.price_per_seat,

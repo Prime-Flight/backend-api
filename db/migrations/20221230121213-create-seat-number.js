@@ -17,6 +17,9 @@ module.exports = {
       passenger_id: {
         type: Sequelize.INTEGER
       },
+      flight_id: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -26,7 +29,7 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
-  },//
+  },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('SeatNumbers');
   }

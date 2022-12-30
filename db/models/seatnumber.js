@@ -16,10 +16,11 @@ module.exports = (sequelize, DataTypes) => {
   SeatNumber.init({
     seat_number: DataTypes.STRING,
     booking_detail_id: DataTypes.INTEGER,
-    passenger_id: DataTypes.INTEGER
+    passenger_id: DataTypes.INTEGER,
+    flight_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'SeatNumber',
   });
   return SeatNumber;
-};//
+};
