@@ -61,7 +61,7 @@ module.exports = {
                         for (let i = 1; i <= 32; i++) {
                             for (let j = 0; j < seatAB.length; j++) {
                                 let seat = `${seatAB.charAt(j)}-${i}`
-                                const checkSeat = await SeatNumber.findOne({ where: { seat_number: seat, flightId: flight.id } })
+                                const checkSeat = await SeatNumber.findOne({ where: { seat_number: seat, flight_id: flight.id } })
                                 if (!checkSeat) {
                                     numSeat = numSeat + 1
                                     seatArr.push(seat)
@@ -81,7 +81,7 @@ module.exports = {
                                     seat_number: seatArr[i],
                                     booking_detail_id: addBookingDetail.id,
                                     passenger_id: passenger_id[i],
-                                    flightId: flight.id,
+                                    flight_id: flight.id,
 
                                 })
                             }
