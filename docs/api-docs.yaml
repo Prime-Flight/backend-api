@@ -329,7 +329,7 @@ components:
           description: Foreign key of buyer
         passenger_category:
           type: enum 
-          description: Passenger Category uses ('child', 'adult') 
+          description: Passenger Category uses ('Child', 'Adult') 
         passenger_detail:
           type: integer
           description: foreign key of passpor detail 
@@ -1733,7 +1733,7 @@ paths:
                     data:
                       id: 1
                       buyer_id: 1
-                      passengger_category: adult
+                      passengger_category: Adult
                       name: Abel Jollando
                       nik: "32700333111111"
                       passport_number: "123123123123"
@@ -1745,7 +1745,7 @@ paths:
                     data:
                       id: 1
                       buyer_id: 1
-                      passenger_category: adult
+                      passenger_category: Adult
                       name: Abel Jollando
                       nik: "32700333111111"
                       passport_number: null
@@ -1773,14 +1773,14 @@ paths:
             examples:
               Save Abel Jollando with passport number:
                 value:
-                  passenger_category: adult
+                  passenger_category: Adult
                   name: Abel Jollando
                   nik: "32700333111111"
                   passport_number: "2131231231"
                   gender: Male
               Save Abel Jollando without passport number:
                 value:
-                  passenger_category: adult
+                  passenger_category: Adult
                   name: Abel Jollando
                   nik: "32700333111111"
                   gender: Male
@@ -1809,7 +1809,7 @@ paths:
                     data:
                       id: 1
                       buyer_id: 1
-                      passengger_category: adult
+                      passengger_category: Adult
                       name: Abel Jollando
                       nik: "32700333111111"
                       passport_number: "123123123123"
@@ -1841,7 +1841,7 @@ paths:
                     data:
                       passenger_id: 1
                       buyer_id: 1
-                      passenger_category: adult
+                      passenger_category: Adult
                       name: Abel Jollando
                       nik: "32700333111111"
                       passport_number: "180003"
@@ -1853,7 +1853,7 @@ paths:
                     data:
                       passenger_id: 1
                       buyer_id: 1
-                      passenger_category: adult
+                      passenger_category: Adult
                       name: Abel Jollando Maulana
                       nik: "32700333111111"
                       passport_number: null
@@ -1885,7 +1885,7 @@ paths:
               Update Abel Jollando passport number:
                 value:
                   passenger_id: 1
-                  passenger_category: adult
+                  passenger_category: Adult
                   name: Abel Jollando
                   nik: "32700333111111"
                   passport_number: "180003"
@@ -1893,7 +1893,7 @@ paths:
               Update Abel Jollando Name:
                 value:
                   passenger_id: 1
-                  passenger_category: adult
+                  passenger_category: Adult
                   name: Abel Jollando Maulana
                   nik: "32700333111111"
                   gender: Male
