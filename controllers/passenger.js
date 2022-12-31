@@ -18,52 +18,49 @@ module.exports = {
                     data: null
                 });
             }
-            
+
             const passengerExists = await PassengerDetail.findOne({
-              where : { nik: nik }
+                where: { nik: nik }
             });
             console.log(`THE PASSENGER` + passengerExists);
 
-            if(passengerExists) { 
-              return res.status(403).json({ 
+            if (passengerExists) {
+                return res.status(403).json({
                     status: false,
                     message: `passenger with name ${passengerExists.name} and nik ${passengerExists.nik} is already registered`,
                     data: null
-              });
-            } else { 
-              const passengerDetail = await PassengerDetail.create({
-                  name,
-                  nik,
-                  passport_number,
-                  gender
-              });
-
-              const passenger = await Passenger.create({
-                  buyer_id: id,
-                  passenger_category,
-                  passenger_detail: passengerDetail.id
-              });
-              
-              notification.passenger(user.id, passenger.id);
-
-              return res.status(200).json({
-                  status: true,
-                  message: "success",
-                  data: {
-                      id: passenger.id,
-                      buyer_id: passenger.buyer_id,
-                      passengger_category: passengerDetail.passenger_category,
-                      name: passengerDetail.name,
-                      nik: passengerDetail.nik,
-                      passport_number: passengerDetail.passport_number,
-                      gender: passengerDetail.gender 
-                  }
-              });
+                });
             }
+            const passengerDetail = await PassengerDetail.create({
+                name,
+                nik,
+                passport_number,
+                gender
+            });
 
+            const passenger = await Passenger.create({
+                buyer_id: id,
+                passenger_category,
+                passenger_detail: passengerDetail.id
+            });
 
+            notification.passenger(user.id, passenger.id);
+
+            return res.status(200).json({
+                status: true,
+                message: "success",
+                data: {
+                    id: passenger.id,
+                    buyer_id: passenger.buyer_id,
+                    passengger_category: passengerDetail.passenger_category,
+                    name: passengerDetail.name,
+                    nik: passengerDetail.nik,
+                    passport_number: passengerDetail.passport_number,
+                    gender: passengerDetail.gender
+                }
+            });
         } catch (err) {
-            console.log(err); 
+            console.log(err);
             next(err);
         }
     },
@@ -96,7 +93,7 @@ module.exports = {
                 message: "Successfully Get All Passenger",
                 data: Passenger
             });
-            
+
         } catch (err) {
             console.log(err);
             next(err);
@@ -132,18 +129,18 @@ module.exports = {
                 name: name,
                 nik: nik,
                 passport_number: passport_number,
-                gender:gender
+                gender: gender
             },
-            {
-                where: {id:passengerId.passenger_detail}
-            });
+                {
+                    where: { id: passengerId.passenger_detail }
+                });
 
             const passenger = await Passenger.update({
-                passenger_category:passenger_category
+                passenger_category: passenger_category
             },
-            {
-                where: {id:passenger_id}
-            });
+                {
+                    where: { id: passenger_id }
+                });
 
             const passengerUpdateDetail = await PassengerDetail.findOne({ where: { id: passengerId.passenger_detail } });
             const passengerUpdate = await Passenger.findOne({ where: { id: passenger_id } });
@@ -158,7 +155,7 @@ module.exports = {
                     name: passengerUpdateDetail.name,
                     nik: passengerUpdateDetail.nik,
                     passport_number: passengerUpdateDetail.passport_number,
-                    gender: passengerUpdateDetail.gender 
+                    gender: passengerUpdateDetail.gender
                 }
             });
         } catch (err) {
@@ -169,7 +166,7 @@ module.exports = {
     delete: async (req, res, next) => {
         try {
             const { id } = req.body;
-            const passenger = await Passenger.findOne({ where: { id: id}});
+            const passenger = await Passenger.findOne({ where: { id: id } });
             if (!passenger) {
                 return res.status(404).json({
                     status: false,
@@ -191,10 +188,10 @@ module.exports = {
                 status: true,
                 message: "Successfully Delete Passenger",
                 data: {
-                    id:id
+                    id: id
                 }
             });
-            
+
         } catch (err) {
             console.log(err);
             next(err);
