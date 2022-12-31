@@ -74,7 +74,7 @@ module.exports = {
                                 break
                             }
                         }
-                        console.log(`test ini id nya : ${flight.id}`)
+
                         if (numSeat == passenger_id.length) {
                             for (let i = 0; i < seatArr.length; i++) {
                                 await SeatNumber.create({
@@ -114,7 +114,6 @@ module.exports = {
                 }
             }
         } catch (err) {
-            console.log(err)
             next(err)
         }
     },
@@ -188,7 +187,6 @@ module.exports = {
             })
 
         } catch (err) {
-            console.log(err)
             next(err)
         }
     },
@@ -233,7 +231,6 @@ module.exports = {
                 })
             }
         } catch (err) {
-            console.log(err)
             next(err)
         }
 
@@ -278,6 +275,8 @@ module.exports = {
             const { id } = req.user;
             const { booking_id } = req.body;
             const checkBooking = await Booking.findOne({ where: { id: booking_id } });
+            const checkBookingDetail = await BookingDetail.findOne({ where: { booking_id: booking_id } });
+
             if (!checkBooking) {
                 return res.status(400).json({
                     status: true,
@@ -295,79 +294,79 @@ module.exports = {
                 });
             }
 
-            // update the booking status
-            await Booking.update({ status: "Success" }, { where: { id: booking_id } });
+            const checkTransaction = await Transaction.findOne({ where: { booking_id: booking_id } });
 
-            const query = ` 
-              SELECT
-                  "Bookings".id booking_id,
-                  "Bookings".seat total_seat,
-                  "Bookings".user user_id,
-                  "Bookings".status booking_status,
-                  "Bookings".booking_code,
-                  "BookingDetails".document_url,
-                  "BookingDetails".price_per_seat,
-                  "Flights".flight_code,
-                  "Airlines".airline,
-                  "Airlines".airline_code,
-                  "Flights".departure_iata_code,
-                  TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm') as departure_time,
-                  "Flights".arrival_iata_code,
-                  "PassengerDetails".name
-              FROM
-                  "Bookings"
-                  JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
-                  JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
-                  JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
-                  JOIN "Flights" ON "Flights".id = "Bookings".destination
-                  JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
-              WHERE
-                  "Bookings"."user" = ${id} 
-                  AND "Bookings".id = ${booking_id};
-              `;
-
-            let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
-
-            // bookingInfo = bookingInfo[0];
-            // generate the ticket
-            // ticketResult = await ticket.generateTicket('ticket.ejs', { bookingInfo});
-
-
-            // await BookingDetail.update({document_url: ticketUpload.url }, {where: { booking_id: bookingInfo[0].booking_id }});
-
-            const checkTransaction = await Transaction.findOne({ where: { booking_id: bookingInfo[0].booking_id } });
-
-            if (checkTransaction != null && checkTransaction.status == "Success") {
+            if (checkTransaction) {
                 return res.status(409).json({
                     status: false,
-                    message: `Your transaction for booking of ${bookingInfo[0].booking_code} is already Success`
+                    message: `Your transaction for this booking  is already Success`
                 })
             }
 
-            const transaction = await Transaction.create({
-                booking_id: bookingInfo[0].booking_id,
-                total_price: bookingInfo[0].total_seat * bookingInfo[0].price_per_seat,
+            // update the booking status
+            await Booking.update({ status: "Success" }, { where: { id: booking_id } });
+
+            // const query = ` 
+            //   SELECT
+            //       "Bookings".id booking_id,
+            //       "Bookings".seat total_seat,
+            //       "Bookings".user user_id,
+            //       "Bookings".status booking_status,
+            //       "Bookings".booking_code,
+            //       "BookingDetails".document_url,
+            //       "BookingDetails".price_per_seat,
+            //       "Flights".flight_code,
+            //       "Airlines".airline,
+            //       "Airlines".airline_code,
+            //       "Flights".departure_iata_code,
+            //       TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm') as departure_time,
+            //       "Flights".arrival_iata_code,
+            //       "PassengerDetails".name
+            //   FROM
+            //       "Bookings"
+            //       JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
+            //       JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
+            //       JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
+            //       JOIN "Flights" ON "Flights".id = "Bookings".destination
+            //       JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
+            //       JOIN "SeatNumbers" ON "PassengerDetails".id = "SeatNumbers".booking_detail_id
+            //   WHERE
+            //       "Bookings"."user" = ${id} 
+            //       AND "Bookings".id = ${booking_id};
+            //   `;
+
+            // let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+
+            // generate the ticket
+            // ticketResult = await ticket.generateTicket('ticket.ejs', { bookingInfo});
+            // await BookingDetail.update({document_url: ticketUpload.url }, {where: { booking_id: bookingInfo[0].booking_id }});
+            // return res.render('ticket/ticket.ejs', { bookingInfo});
+
+            const totalPrice = checkBooking.seat * checkBookingDetail.price_per_seat;
+          
+            await Transaction.create({
+                booking_id: checkBooking.id,
+                total_price: totalPrice,
                 status: "Success"
             });
 
-
-            await notification.transfer(id, bookingInfo[0].booking_id);
-            // return res.render('ticket/ticket.ejs', { bookingInfo});
+            await notification.transfer(id, checkBooking.id);
+            
+            const transaction = await Transaction.findOne({where : { booking_id: booking_id }});
 
             return res.status(200).json({
                 status: true,
                 message: "Successfully Checkout Booking",
-                // data: bookingInfo
                 data: {
-                    booking_id: bookingInfo[0].booking_id,
+                    booking_id: checkBooking.id,
                     transaction_id: transaction.id,
-                    document_url: ticketUpload.url,
+                    document_url: null,
                     transaction_status: transaction.status,
                     total_price: transaction.total_price,
                 }
             });
         } catch (err) {
-            console.log(err);
+            console.log(err)
             next(err);
         }
     },
