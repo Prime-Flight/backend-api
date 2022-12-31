@@ -21,7 +21,7 @@ module.exports = {
         // send the notification into client
         global.io.emit(`${notificationActions.booking}-${user_id}`, notification);
 
-        resolve(notification.message);
+        return resolve(notification.message);
       } catch (err) {
         return reject(err);
       }
@@ -30,11 +30,6 @@ module.exports = {
   transfer: async (user_id, booking_id) => {
     return new Promise(async(resolve, reject) => { 
       try {
-        const transfer = await Transaction.findOne({ where: { booking_id: booking_id } });
-        if (!transfer) {
-          return reject("Cannot Create, There's no Booking with this transfer code")
-        }
-
         const booking = await Booking.findOne({ where: { id: booking_id } });
 
         const notification = await Notification.create({
@@ -46,6 +41,7 @@ module.exports = {
 
         // send the notification into client
         global.io.emit(`${notificationActions.transfer}-${user_id}`, notification);
+        return resolve(notification.message);
       } catch (err) {
         return reject(err);
       }
@@ -89,7 +85,7 @@ module.exports = {
 
         // send the notification into client
         global.io.emit(`${notificationActions.passenger}-${user_id}`, notification);
-
+        return resolve(notification.message);
       } catch (err) {
         return reject(err);
       }
@@ -116,7 +112,7 @@ module.exports = {
 
         // send the notification into admin client
         global.io.emit(`${notificationActions.user_cancel}-${admin.id}`, notification);
-
+        return resolve(notification.message);
       } catch (err) {
         return reject(err);
       }
@@ -139,6 +135,7 @@ module.exports = {
             read: false
           })
           global.io.emit(`${notificationActions.verify_email}-${user_id}`, notif)
+          return resolve(notif.message);
         }
       } catch (err) {
         return reject(err)
