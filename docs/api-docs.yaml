@@ -278,6 +278,9 @@ components:
         document_url:
           type: string 
           description: url for the booking detail for user after payment the transaction that the ticket will be generated to redeem a boarding pass 
+        qr_url:
+          type: string 
+          description: url for the qrcode 
         price_per_seat:
           type: float 
           description: the price for transaction total which is the gonna be the price for a seat  
@@ -2317,11 +2320,13 @@ paths:
                     status: true
                     message: Successfully Checkout Booking
                     data:
-                      booking_id: 1
-                      transaction_id: 1
-                      document_url: https://imgur.one/3dxxse23
-                      transaction_status:  Success
-                      total_price: 2100000
+                      booking_id: 29
+                      transaction_id: 30
+                      document_url: "https://ik.imagekit.io/nh5wornpx/2023-01-01_01_40_21DPSQGCKG01_KpVgpGgQK.pdf"
+                      barcode_url: "https://ik.imagekit.io/nh5wornpx/2023-01-01_01_40_17DPSQGCKG01_barcode_-t2uL07Xx.png"
+                      transaction_status: "Success"
+                      total_price: 3000000
+
         '400':
           description: Bad Request Can't Checkout booking, because no booking info 
           content:
@@ -2367,7 +2372,7 @@ paths:
             examples:
               Get the Booking ID that user want to checkout :
                 value:
-                  booking_id: 1
+                  booking_id: 29 
 
   /booking/my-transaction:
     get:
