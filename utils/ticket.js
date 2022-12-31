@@ -47,6 +47,7 @@ module.exports = {
 
         // document options
         const options = {
+          phantomPath: "../node_modules/phantomjs-prebuilt/bin/phantomjs",
           childProcessOptions: {
               env: {
                 OPENSSL_CONF: '/dev/null',
