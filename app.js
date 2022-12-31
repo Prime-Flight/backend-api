@@ -11,7 +11,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const notificationActions = require('./lib/notification-actions'); 
 const { User } = require('./db/models');
-
+const path = require('path');
 
 Sentry.init({
   dsn: "https://5e67869c400345c9ade926085aba0ecd@o4504071404126208.ingest.sentry.io/4504219923972096",

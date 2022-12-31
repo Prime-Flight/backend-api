@@ -1,18 +1,14 @@
 const { Booking, BookingDetail, Transaction, Buyer, SeatNumber, Flight } = require('../db/models')
-
 const db = require('../db/models')
 const Validator = require('fastest-validator')
 const { QueryTypes } = require('sequelize')
-
 const v = new Validator
-
 const notification = require('../utils/notification');
-// const ticket = require('../utils/ticket');
+const ticket = require('../utils/ticket');
 const lib = require('../lib');
 
 module.exports = {
     order: async (req, res, next) => {
-
         try {
             const { flight_id, passenger_id } = req.body
             let addBookingDetail, addBuyer, addSeat
@@ -237,6 +233,7 @@ module.exports = {
     },
 
     cancelRequest: async (req, res, next) => {
+      try {
         const { booking_id, cancel_reason } = req.body
 
         const existBooking = await BookingDetail.findOne({ where: { booking_id } })
@@ -269,6 +266,9 @@ module.exports = {
                 }
             })
         }
+      } catch(err) {
+        next(err)
+      }
     },
     checkout: async (req, res, next) => {
         try {
@@ -306,52 +306,64 @@ module.exports = {
             // update the booking status
             await Booking.update({ status: "Success" }, { where: { id: booking_id } });
 
-            // const query = ` 
-            //   SELECT
-            //       "Bookings".id booking_id,
-            //       "Bookings".seat total_seat,
-            //       "Bookings".user user_id,
-            //       "Bookings".status booking_status,
-            //       "Bookings".booking_code,
-            //       "BookingDetails".document_url,
-            //       "BookingDetails".price_per_seat,
-            //       "Flights".flight_code,
-            //       "Airlines".airline,
-            //       "Airlines".airline_code,
-            //       "Flights".departure_iata_code,
-            //       TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm') as departure_time,
-            //       "Flights".arrival_iata_code,
-            //       "PassengerDetails".name
-            //   FROM
-            //       "Bookings"
-            //       JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
-            //       JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
-            //       JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
-            //       JOIN "Flights" ON "Flights".id = "Bookings".destination
-            //       JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
-            //       JOIN "SeatNumbers" ON "PassengerDetails".id = "SeatNumbers".booking_detail_id
-            //   WHERE
-            //       "Bookings"."user" = ${id} 
-            //       AND "Bookings".id = ${booking_id};
-            //   `;
+            const query = ` 
+              SELECT
+                  "Bookings".id booking_id,
+                  "Bookings".seat total_seat,
+                  "Bookings".user user_id,
+                  "Bookings".status booking_status,
+                  "Bookings".booking_code,
+                  "BookingDetails".document_url,
+                  "BookingDetails".price_per_seat,
+                  "Flights".flight_code,
+                  "Airlines".airline,
+                  "Airlines".airline_code,
+                  "Flights".departure_iata_code,
+                  TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm') as departure_time,
+                  "Flights".arrival_iata_code,
+                  "PassengerDetails".name,
+                  "PassengerDetails".nik,
+                  "SeatNumbers".seat_number seat_num
+              FROM
+                  "Bookings"
+                  JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
+                  JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
+                  JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
+                  JOIN "Flights" ON "Flights".id = "Bookings".destination
+                  JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
+                  JOIN "SeatNumbers" ON "Passengers".id = "SeatNumbers".passenger_id
+              WHERE
+                  "Bookings"."user" = ${id} 
+                  AND "Bookings".id = ${booking_id};
+              `;
 
-            // let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
+            let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
 
             // generate the ticket
-            // ticketResult = await ticket.generateTicket('ticket.ejs', { bookingInfo});
-            // await BookingDetail.update({document_url: ticketUpload.url }, {where: { booking_id: bookingInfo[0].booking_id }});
-            // return res.render('ticket/ticket.ejs', { bookingInfo});
+            ticketInvoice = await ticket.generateInvoice('ticket.html', bookingInfo, req.user.email);
+      
+            // generate QRCode for the ticket
+            const generateQRCode = await ticket.generateQR(ticketInvoice, bookingInfo);
 
+            // const boardingPass = ejs.render('ticket.ejs', { bookingInfo: bookingInfo[0]});
+
+            // get the total price
             const totalPrice = checkBooking.seat * checkBookingDetail.price_per_seat;
+
+            // update the document and qr code url
+            await BookingDetail.update({document_url: ticketInvoice, qr_url: generateQRCode }, {where: { booking_id: booking_id }});
           
+            // create transaction
             await Transaction.create({
                 booking_id: checkBooking.id,
                 total_price: totalPrice,
                 status: "Success"
             });
 
+            // notify the user
             await notification.transfer(id, checkBooking.id);
             
+            // get the transaction
             const transaction = await Transaction.findOne({where : { booking_id: booking_id }});
 
             return res.status(200).json({
@@ -360,13 +372,13 @@ module.exports = {
                 data: {
                     booking_id: checkBooking.id,
                     transaction_id: transaction.id,
-                    document_url: null,
+                    document_url: ticketInvoice,
+                    barcode_url: generateQRCode,
                     transaction_status: transaction.status,
                     total_price: transaction.total_price,
                 }
             });
         } catch (err) {
-            console.log(err)
             next(err);
         }
     },
@@ -374,34 +386,34 @@ module.exports = {
         try {
             const { id } = req.user;
             const query = `
-        SELECT
-            "Bookings".id booking_id,
-            "Bookings".seat total_seat,
-            "Bookings".user user_id,
-            "Bookings".status booking_status,
-            "Bookings".booking_code,
-            "BookingDetails".document_url,
-            "BookingDetails".price_per_seat,
-            "Flights".flight_code,
-            "Airlines".airline,
-            "Airlines".airline_code,
-            "Flights".departure_iata_code,
-            "Flights".arrival_iata_code,
-            TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm'),
-            "PassengerDetails".name,
-            "Transactions".status,
-            "Transactions".total_price
-        FROM
-            "Bookings"
-            JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
-            JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
-            JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
-            JOIN "Flights" ON "Flights".id = "Bookings".destination
-            JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
-            JOIN "Transactions" ON "Transactions".booking_id = "Bookings".id
-        WHERE
-            "Bookings"."user" = ${id}; 
-      `
+                SELECT
+                    "Bookings".id booking_id,
+                    "Bookings".seat total_seat,
+                    "Bookings".user user_id,
+                    "Bookings".status booking_status,
+                    "Bookings".booking_code,
+                    "BookingDetails".document_url,
+                    "BookingDetails".price_per_seat,
+                    "Flights".flight_code,
+                    "Airlines".airline,
+                    "Airlines".airline_code,
+                    "Flights".departure_iata_code,
+                    "Flights".arrival_iata_code,
+                    TO_CHAR("Flights".departure_time, 'YYYY-MM-DD hh:mm'),
+                    "PassengerDetails".name,
+                    "Transactions".status,
+                    "Transactions".total_price
+                FROM
+                    "Bookings"
+                    JOIN "BookingDetails" ON "Bookings".id = "BookingDetails".booking_id
+                    JOIN "Passengers" ON "Bookings"."user" = "Passengers".buyer_id
+                    JOIN "PassengerDetails" ON "Passengers".passenger_detail = "PassengerDetails".id
+                    JOIN "Flights" ON "Flights".id = "Bookings".destination
+                    JOIN "Airlines" ON "Flights".airline_id = "Airlines".id
+                    JOIN "Transactions" ON "Transactions".booking_id = "Bookings".id
+                WHERE
+                    "Bookings"."user" = ${id}; 
+              `
             let transactionHistory = await db.sequelize.query(query, { type: QueryTypes.SELECT });
             return res.status(200).json({
                 status: true,
