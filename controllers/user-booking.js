@@ -340,10 +340,10 @@ module.exports = {
             let bookingInfo = await db.sequelize.query(query, { type: QueryTypes.SELECT });
 
             // generate the ticket
-            ticketInvoice = await ticket.generateInvoice('ticket.html', bookingInfo, req.user.email);
+            // ticketInvoice = await ticket.generateInvoice('ticket.html', bookingInfo, req.user.email);
       
-            // generate QRCode for the ticket
-            const generateQRCode = await ticket.generateQR(ticketInvoice, bookingInfo);
+            // // generate QRCode for the ticket
+            // const generateQRCode = await ticket.generateQR(ticketInvoice, bookingInfo);
 
             // const boardingPass = ejs.render('ticket.ejs', { bookingInfo: bookingInfo[0]});
 
@@ -351,7 +351,7 @@ module.exports = {
             const totalPrice = checkBooking.seat * checkBookingDetail.price_per_seat;
 
             // update the document and qr code url
-            await BookingDetail.update({document_url: ticketInvoice, qr_url: generateQRCode }, {where: { booking_id: booking_id }});
+            // await BookingDetail.update({document_url: ticketInvoice, qr_url: generateQRCode }, {where: { booking_id: booking_id }});
           
             // create transaction
             await Transaction.create({
@@ -372,13 +372,14 @@ module.exports = {
                 data: {
                     booking_id: checkBooking.id,
                     transaction_id: transaction.id,
-                    document_url: ticketInvoice,
-                    barcode_url: generateQRCode,
+                    document_url: null,
+                    barcode_url: null,
                     transaction_status: transaction.status,
                     total_price: transaction.total_price,
                 }
             });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     },
