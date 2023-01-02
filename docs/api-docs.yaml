@@ -1,0 +1,2676 @@
+openapi: 3.0.0
+
+info:
+  title: Prime Flight API Documentation
+  version: '1.0'
+
+servers:
+  - url : 'http://localhost:3213/api'
+    description: Local Development Server
+  - url : 'https://primeflight-api-staging.km3ggwp.com/api'
+    description: Remote Staging Server
+  - url : 'https://primeflight-api.km3ggwp.com/api'
+    description: Remote Production Server
+
+components:
+  responses:
+    UnauthorizedError:
+      description: Invalid Access Token
+      content:
+        application/json:
+          examples:
+            Unauthorized:
+              value:
+                status: false
+                message: You are not authorized  
+                data: null
+    NoPage:
+      description: Invalid Request No Such Page
+      content:
+        application/json:
+          examples:
+            No Page Avalaible:
+              value:
+                status: false
+                message: The Page is not available  
+                data: null
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      title: User
+      type: object
+      description: 'User can have three role as an Admin, Buyer and Anonymous User ( not registered )'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for User
+        name:
+          type: string
+        email:
+          type: string
+          description: the email should be unique, one email one user  
+        password:
+          type: string
+          description: the password should be encrypted  
+        url_profile_picture:
+          type: string
+          description: the url of picture profile using imagekit, the default picture is null then it should be providing an anonymous image if it's null 
+        gender:
+          type: enum
+          description: radio button male or female
+        is_google:
+          type: boolean
+          description: To check if the user is using the google authentication if user have registered with google then we give the warning to user to login with google instead of regular email    
+        role:
+          type: integer
+          description: A foreign key for the role of user like 'admin' and 'buyer'
+        nationality:
+          type: string
+          description: Nationality to determine the booking input for passport or country identifier (KTP)  
+        is_verified:
+          type: boolean
+          description: To check if the user is verified
+        phone_number:
+          type: string
+          description: phone number should be with the country code in the database (for example 6284433221133)
+      required:
+        - id
+        - name
+        - email
+        - password
+        - is_google
+        - role
+        - nationality
+        - is_verified
+    Role:
+      title: Role
+      type: object
+      description: 'Role Based Auth This is for middleware Admin and User and Guest'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Role
+        name:
+          type: string
+          description: Name of the Role for example = Admin 
+      required:
+        - id
+        - name
+    Module:
+      title: Module
+      type: object
+      description: 'Module is for checking what module we are in'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Module
+        name:
+          type: string
+          description: Name of the Module for example = User Dashboard 
+      required:
+        - id
+        - name
+    Access:
+      title: Access
+      type: object
+      description: 'Access is for granting the user permission for using the Module'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Access
+        role_id:
+          type: integer 
+          description: Foreign key of Role Id
+        module_id:
+          type: integer 
+          description: Foreign key of Module Id
+        read:
+          type: boolean
+          description: Read Permission of a module and data 
+        write:
+          type: boolean
+          description: Write Permission of a module and data 
+      required:
+        - id
+        - role_id
+        - module_id
+        - read
+        - write
+    Transaction:
+      title: Transaction
+      type: object
+      description: 'Transaction that the User Do with the Application from the Booking'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Transaction
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking
+        total_price:
+          type: float 
+          description: Total of the Transaction Price
+        status:
+          type: enum
+          description: Status consist of ("Rejected", "Canceled", "Pending", "Success") 
+        user_cancel_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+        user_reject_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+      required:
+        - id
+        - booking_id
+        - total_price
+        - status
+    Flight:
+      title: Flight
+      type: object
+      description: 'The Flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Flight
+        flight_code:
+          type: string 
+          description: the flight code
+        departure_iata_code:
+          type: string
+          description: Unique Identifier for Airport using IATA for Airport Departure
+        deparutre_icao_code:
+          type: string
+          description: Unique Identifier for Airport using ICAO for Airport Departure
+        departure_time:
+          type: date 
+          description: Date and Time of the Flight Departure
+        arrival_iata_code:
+          type: string
+          description: Unique Identifier for Airport using IATA for Airport Arrival
+        arrival_icao_code:
+          type: string
+          description: Unique Identifier for Airport using ICAO for Airport Arrival
+        arrival_time:
+          type: date 
+          description: Date and Time of the Flight Arrival
+        airline_id:
+          type: integer
+          description: foreign key of Airline model
+        seat_capacity:
+          type: integer
+          description: the seat capacity of the flights, this element is to count the remaining seat for the user booking. 
+        price:
+          type: float
+          description: price for the flights
+      required:
+        - id
+        - flight_code
+        - departure_iata_code
+        - departure_icao_code
+        - departure_time
+        - arrival_iata_code
+        - arrival_icao_code
+        - arrival_time
+        - airline_id
+        - price
+    Airline:
+      title: Airline
+      type: object
+      description: "This is for the airline information"
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Airline
+        airline:
+          type: string
+          description: airline name
+        airline_code:
+          type: string
+          description: airline code
+        airline_logo:
+          type: string
+          description: stores the url for the image
+    Booking:
+      title: Booking
+      type: object
+      description: 'The Booking User did in the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Booking
+        destination:
+          type: integer 
+          description: Foreign key of Flight Model
+        user:
+          type: integer 
+          description: Foreign key of User Id
+        seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+        status:
+          type: enum
+          description: Status consist of ("Rejected", "Canceled", "Pending", "Success") 
+        booking_code:
+          type: string
+          description: Booking Code By Using the IATA departure - IATA Arrival and Plane Code  
+      required:
+        - id
+        - destination
+        - user
+        - seat
+        - booking_code
+        - status
+    BookingDetail:
+      title: BookingDetail
+      type: object
+      description: 'The Booking Detail for the document and flight code'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for BookingDetail
+        booking_id:
+          type: integer 
+          description: Foreign key of Booking Model
+        document_url:
+          type: string 
+          description: url for the booking detail for user after payment the transaction that the ticket will be generated to redeem a boarding pass 
+        qr_url:
+          type: string 
+          description: url for the qrcode 
+        price_per_seat:
+          type: float 
+          description: the price for transaction total which is the gonna be the price for a seat  
+        user_cancel_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+        admin_reject_reason:
+          type: text
+          description: the reason why user cancel the transaction 
+      required:
+        - id
+        - booking_id
+        - document_url
+        - flight_code
+        - price_per_seat
+        - seat_number
+    Buyer:
+      title: Buyer
+      type: object
+      description: 'The Buyer is related User that login, it consist the information for the User that responsible for the booking of the flight'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Buyer
+        booking_detail_id:
+          type: integer 
+          description: Foreign key of Booking Detail
+        user_id:
+          type: integer 
+          description: Foreign key of User Id
+        total_seat:
+          type: integer 
+          description: Number Of Seat that user Book for example = 3 seat
+      required:
+        - id
+        - destination
+        - user
+        - seat
+    Passenger:
+      title: Passenger
+      type: object
+      description: 'Passenger is the information of the consumer that will redeem the ticket'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for Passenger
+        buyer_id:
+          type: integer 
+          description: Foreign key of buyer
+        passenger_category:
+          type: enum 
+          description: Passenger Category uses ('Child', 'Adult') 
+        passenger_detail:
+          type: integer
+          description: foreign key of passpor detail 
+      required:
+        - id
+        - buyer_id
+        - passenger_category
+        - passenger_detail
+    PassengerDetail:
+      title: PassengerDetail
+      type: object
+      description: 'PassengerDetail is the detail information such as passenger sensitive id on NIK or Passport'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for PassengerDetail
+        name:
+          type: string 
+          description: name of the passenger
+        nik:
+          type: string
+          description: the ID number of the passenger for adult -> check for unique data here.
+        passport_number:
+          type: string
+          description: the passport number of the passenger for adult and foreign
+        gender:
+          type: enum
+          description: enum value "Male" and "Female"
+      required:
+        - id
+        - name
+        - nik
+        - gender
+    SeatNumber:
+      title: SeatNumber
+      type: object
+      description: 'SeatNumber is the information for Passenger Seat Number'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for SeatNumber
+        seat_number:
+          type: string
+          description: seat number in the plane 
+        booking_detail_id:
+          type: integer
+          description: Foreign key of BookingDetail Model 
+        passenger_id:
+          type: integer
+          description: Foreign key of Passenger Model 
+      required:
+        - id
+        - seat_number
+        - booking_detail_id
+        - passenger_id
+    Notification:
+      title: Notification
+      type: object
+      description: 'Notificaion is to store the in-app notification'
+      properties:
+        id:
+          type: integer 
+          description: Unique Identifier for SeatNumber
+        recipient_id:
+          type: integer
+          description: Foreign key of User that sending the notification (can be null) 
+        actions:
+          type: string
+          description: What type of action they are doing, such as Booking, Transaction, etc. 
+        message:
+          type: string
+          description: message for the notification. 
+        read:
+          type: boolean
+          description: check if the is already read by user.
+      required:
+        - id
+        - recipient_id
+        - sender_id
+        - actions
+        - message
+        - read
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+    description: API for Auth 
+  - name: Country   
+    description: API for Country List and Country Code from https://countrycode.dev/docs
+  - name: Airport
+    description: API for Airport that is forwarded from the port-api.com 
+  - name: User - Profile Details
+    description: User Details after creating the Account 
+  - name: User - Passenger Data
+    description: User can add passenger data to ease the booking order  
+  - name: User - Booking
+    description: API for User CRUD Booking.  
+  - name: Admin - Flight Schedule
+    description: API for Admin CRUD for the flight schedule API.  
+  - name: Admin - Booking
+    description: API for Admin CRUD for the Rejecting and Accepting the User Booking.
+  - name: User - Notification
+    description: API for User Notification in their actions.
+
+paths:
+  '/auth/register':
+    post:
+      summary: Create New User
+      operationId: post-user-register
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                New User Nanda Suparman:
+                  value:
+                    status: true
+                    message: Successfully Registered With Email
+                    data:
+                      id: 1
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: male
+                      isGoogle: false
+                      role: 2
+                      nationality: Indonesian
+                      is_verified: false
+        '400':
+          description: Missing Detail Information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Failed Registered User :
+                  value:
+                    status: false
+                    message: Failed Register With Email, ${{err}}
+                    data: null
+        '409':
+          description: Email Already Used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Email Already Used :
+                  value:
+                    status: false
+                    message: Failed Register With Your Email Because Email Already Used, Please Use Another Email.
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                email: 
+                  type: string
+                password: 
+                  type: string
+                gender:
+                  type: string
+                nationality: 
+                  type: string
+              required:
+                - name
+                - email
+                - password
+                - gender
+                - nationality
+            examples:
+              Create Nanda Suparman:
+                value:
+                  name: Nanda Suparman
+                  email: nandasuparman@gmail.com
+                  password: super-secret-password
+                  gender: Male
+                  nationality: Indonesian
+
+  /auth/login:
+    post:
+      summary: Login
+      operationId: post-user-login
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Login Nanda Suparman:
+                  value:
+                    status: true
+                    message: Successfully Login
+                    data:
+                      email: nandasuparman@gmail.com
+                      token: <JWTtoken> 
+        '400':
+          description: Email Password Doesn't Match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Missing Detail Info:
+                  value:
+                    status: false
+                    message: email or password doesn\'t match!
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                password: 
+                  type: string
+              required:
+                - email
+                - password
+            examples:
+              Login Nanda Suparman:
+                value:
+                  email: "nandasuparman@gmail.com"
+                  password: "super-secret-password"
+
+  /auth/login/google:
+    post:
+      summary: Login with Google
+      operationId: get-auth-login-google
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Login With Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Login With Google:
+                  value:
+                    status: true
+                    message: Successfully Login with Google
+                    data:
+                      user_id: 1
+                      email: nandasuparmin@gmail.com
+                      token: <JWTToken>
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message already registered with email:
+                  value:
+                    status: false
+                    message: You have registered with your email, Please login with your email instead
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token: 
+                  type: string
+                  description: get the access token from Front End
+              required:
+                - access_token
+
+  /auth/whoami:
+    get:
+      summary: Who am I is a function to check the current user it consists a Bearer Token auth for finding the current logged in user 
+      operationId: get-auth-whoami
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Successfully Get Current User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Get Current User:
+                  value:
+                    status: true
+                    message: Successfully Get Current User
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: male
+                      is_google: false
+                      role: 2
+                      nationality: Indonesian
+
+  /auth/forgot-password:
+    get:
+      summary: Forgot Password Email Template
+      operationId: get-auth-forgot-password
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Send Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Render Email Forgot Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Email Forgot Password
+                    data:
+                      email: nandasuparman@gmail.com
+
+    post:
+      summary: Forgot Password
+      operationId: post-auth-forgot-password
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Send Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Send Email Forgot Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Send Email Forgot Password
+                    data:
+                      email: nandasuparman@gmail.com
+        '400':
+          description: Bad Request No Email Registered, Verify User Email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Verify User because User email is unavailable  
+                    data: null
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                  description: Send the User Email to send the forgot password confirmation
+              required:
+                - email
+            examples:
+              Send Email to Nanda Suparman:
+                value:
+                  email: nandasuparman@gmail.com
+      decription: Post the email to send the forgot password 
+    description: Find and send to send forgot password account
+
+  /auth/reset-password:
+    post:
+      summary: Reset Password by finding email using the middleware (whoami) and getting the token from url and match the token with the current function
+      security:
+        - bearerAuth: []
+      operationId: post-auth-reset-password
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Successfully Reset Password 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Successfully Reset Password for Nanda:
+                  value:
+                    status: true
+                    message: Successfully Reset Password
+                    data:
+                      email: nandasuparman@gmail.com
+                      newPassword: true
+        '400':
+          description: Bad Request No Email Registered, Reset User Password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot Reset User Password because User Email is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '402':
+          description: Password does not match
+          content:
+            application/json:
+              examples:
+                Doesn't match password:
+                  value:
+                    status: false
+                    message: Your New Password and the Confirm New Password Does not match!  
+                    data: null
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: 
+                  type: string
+                  description: New Password the user will use
+                confirm_new_password: 
+                  type: string
+                  description: Confirm the New Password the user will use
+              required:
+                - password:
+                - confirm_new_password:
+            examples:
+              Nanda Suparman Reset Password:
+                value:
+                  password: newer-password
+                  confirm_new_password: newer-password
+      decription: Post reset password by confirming 
+    description: Find and reset password account according to the user request
+
+  /auth/verify-user:
+    put:
+      summary: Verify User Using Email by Searching The Current User Logged In and change the value in the database for user `is_verified` to true 
+      operationId: post-auth-verify-user
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: User Successfully Verified 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message for Success Verified:
+                  value:
+                    status: true
+                    message: Your email is verified 
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message User Already Verified:
+                  value:
+                    status: false
+                    message: You have been verified
+                    data: null
+        '404':
+          description: Can't verify null data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message No User Email :
+                  value:
+                    status: false
+                    message: Cannot Verify Because the User's email is unavailable
+                    data: null
+        '406':
+          description: Expired Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Your verification link is expired. Please click the resend email verification button on your profile page  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/verification-email:
+    post:
+      summary: Send Email by Searching The Current User Logged In (whoami)
+      operationId: send-verification-email
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Auth
+      responses:
+        '200':
+          description: Status for Email Verification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Email Successfuly Send :
+                  value:
+                    status: PENDING
+                    message: Verification Email is being sent
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /country/list:
+    get:
+      summary: Get Country List, it is forwarded from the countrycode.dev 
+      operationId: get-country-list
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get The Country List   
+          content:
+            application/json:
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The Country List
+                    data:
+                      country: [
+                          "Afghanistan",
+                          "Afghanistan",
+                          "Albania",
+                          "Algeria",
+                          "American Samoa",
+                          "Andorra",
+                          "Angola",
+                          "Anguilla",
+                          "Antarctica",
+                          "Antigua and Barbuda",
+                          "Argentina",
+                          "Armenia",
+                          "Aruba",
+                          "Australia",
+                          "Austria",
+                          "Azerbaijan",
+                          "Bahamas",
+                          "Bahrain",
+                          "Bangladesh",
+                          "Barbados",
+                          "Belarus",
+                          "Belgium",
+                          "Belize",
+                          "Benin",
+                          "Bermuda",
+                          "Bhutan",
+                          "Bolivia",
+                          "Bosnia and Herzegovina",
+                          "Botswana",
+                          "Brazil",
+                          "British Indian Ocean Territory",
+                          "British Virgin Islands",
+                          "Brunei",
+                          "Bulgaria",
+                          "Burkina Faso",
+                          "Burundi",
+                          "Cambodia",
+                          "Cameroon",
+                          "Canada",
+                          "Cape Verde",
+                          "Cayman Islands",
+                          "Central African Republic",
+                          "Chad",
+                          "Chile",
+                          "China",
+                          "Christmas Island",
+                          "Cocos Islands",
+                          "Colombia",
+                          "Comoros",
+                          "Cook Islands",
+                          "Costa Rica",
+                          "Croatia",
+                          "Cuba",
+                          "Curacao",
+                          "Cyprus",
+                          "Czech Republic",
+                          "Democratic Republic of the Congo",
+                          "Denmark",
+                          "Djibouti",
+                          "Dominica",
+                          "Dominican Republic",
+                          "East Timor",
+                          "Ecuador",
+                          "Egypt",
+                          "El Salvador",
+                          "Equatorial Guinea",
+                          "Eritrea",
+                          "Estonia",
+                          "Ethiopia",
+                          "Falkland Islands",
+                          "Faroe Islands",
+                          "Fiji",
+                          "Finland",
+                          "France",
+                          "French Polynesia",
+                          "Gabon",
+                          "Gambia",
+                          "Georgia",
+                          "Germany",
+                          "Ghana",
+                          "Gibraltar",
+                          "Greece",
+                          "Greenland",
+                          "Grenada",
+                          "Guam",
+                          "Guatemala",
+                          "Guernsey",
+                          "Guinea",
+                          "Guinea-Bissau",
+                          "Guyana",
+                          "Haiti",
+                          "Honduras",
+                          "Hong Kong",
+                          "Hungary",
+                          "Iceland",
+                          "India",
+                          "Indonesia",
+                          "Iran",
+                          "Iraq",
+                          "Ireland",
+                          "Isle of Man",
+                          "Israel",
+                          "Italy",
+                          "Ivory Coast",
+                          "Jamaica",
+                          "Japan",
+                          "Jersey",
+                          "Jordan",
+                          "Kazakhstan",
+                          "Kenya",
+                          "Kiribati",
+                          "Kosovo",
+                          "Kuwait",
+                          "Kyrgyzstan",
+                          "Laos",
+                          "Latvia",
+                          "Lebanon",
+                          "Lesotho",
+                          "Liberia",
+                          "Libya",
+                          "Liechtenstein",
+                          "Lithuania",
+                          "Luxembourg",
+                          "Macau",
+                          "Macedonia",
+                          "Madagascar",
+                          "Malawi",
+                          "Malaysia",
+                          "Maldives",
+                          "Mali",
+                          "Malta",
+                          "Marshall Islands",
+                          "Mauritania",
+                          "Mauritius",
+                          "Mayotte",
+                          "Mexico",
+                          "Micronesia",
+                          "Moldova",
+                          "Monaco",
+                          "Mongolia",
+                          "Montenegro",
+                          "Montserrat",
+                          "Morocco",
+                          "Mozambique",
+                          "Myanmar",
+                          "Namibia",
+                          "Nauru",
+                          "Nepal",
+                          "Netherlands",
+                          "Netherlands Antilles",
+                          "New Caledonia",
+                          "New Zealand",
+                          "Nicaragua",
+                          "Niger",
+                          "Nigeria",
+                          "Niue",
+                          "North Korea",
+                          "Northern Mariana Islands",
+                          "Norway",
+                          "Oman",
+                          "Pakistan",
+                          "Palau",
+                          "Palestine",
+                          "Panama",
+                          "Papua New Guinea",
+                          "Paraguay",
+                          "Peru",
+                          "Philippines",
+                          "Pitcairn",
+                          "Poland",
+                          "Portugal",
+                          "Puerto Rico",
+                          "Qatar",
+                          "Republic of the Congo",
+                          "Reunion",
+                          "Romania",
+                          "Russia",
+                          "Rwanda",
+                          "Saint Barthelemy",
+                          "Saint Helena",
+                          "Saint Kitts and Nevis",
+                          "Saint Lucia",
+                          "Saint Martin",
+                          "Saint Pierre and Miquelon",
+                          "Saint Vincent and the Grenadines",
+                          "Samoa",
+                          "San Marino",
+                          "Sao Tome and Principe",
+                          "Saudi Arabia",
+                          "Senegal",
+                          "Serbia",
+                          "Seychelles",
+                          "Sierra Leone",
+                          "Singapore",
+                          "Sint Maarten",
+                          "Slovakia",
+                          "Slovenia",
+                          "Solomon Islands",
+                          "Somalia",
+                          "South Africa",
+                          "South Korea",
+                          "South Sudan",
+                          "Spain",
+                          "Sri Lanka",
+                          "Sudan",
+                          "Suriname",
+                          "Svalbard and Jan Mayen",
+                          "Swaziland",
+                          "Sweden",
+                          "Switzerland",
+                          "Syria",
+                          "Taiwan",
+                          "Tajikistan",
+                          "Tanzania",
+                          "Thailand",
+                          "Togo",
+                          "Tokelau",
+                          "Tonga",
+                          "Trinidad and Tobago",
+                          "Tunisia",
+                          "Turkey",
+                          "Turkmenistan",
+                          "Turks and Caicos Islands",
+                          "Tuvalu",
+                          "U.S. Virgin Islands",
+                          "Uganda",
+                          "Ukraine",
+                          "United Arab Emirates",
+                          "United Kingdom",
+                          "United States",
+                          "Uruguay",
+                          "Uzbekistan",
+                          "Vanuatu",
+                          "Vatican",
+                          "Venezuela",
+                          "Vietnam",
+                          "Wallis and Futuna",
+                          "Western Sahara",
+                          "Yemen",
+                          "Zambia",
+                          "Zimbabwe"]
+
+  /country/phone-code?country_name={country_name}:
+    get:
+      summary: Get Phone Code of the Country that has been selected from the nationality of the User, it is forwarded from the countrycode.dev 
+      parameters:
+        - in: query
+          name: country_name
+          schema:
+            type: string
+          required: true
+          description: to filter the number in the country in purposes of getting the country code 
+      operationId: get-phone-code
+      tags: 
+        - Country 
+      responses:
+        '200':
+          description: Successfully Get Phone Code   
+          content:
+            application/json:
+              examples:
+                Get Indonesian Country Code :
+                  value:
+                    status: true
+                    message: Successfully Get The Phone Code
+                    data: 
+                      country: Indonesia
+                      phone_code: 62
+        '400':
+          description: Bad Request No Such Country   
+          content:
+            application/json:
+              examples:
+                No Such Country Exists:
+                  value:
+                    status: false
+                    message: Failed to get the Country Phone Code
+                    data: null 
+                      
+
+  /user/details:
+    get:
+      summary: Get User Details in from the database 
+      operationId: get-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Profile Details 
+      responses:
+        '200':
+          description: Successfully Get The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Get Nanda Suparman with null Profile Pictures and Not Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: true 
+                      phone_number: 6288844443322
+                Get Nanda Suparman with Profile Picture and Verified :
+                  value:
+                    status: true
+                    message: Successfully Get The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: https://imagekit.io/321dcdse/2022_19_mypic.png
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: 1
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide User Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /user/update-details:
+    put:
+      summary: Update User Details to the database 
+      operationId: update-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Profile Details 
+      responses:
+        '200':
+          description: Successfully Update The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Update Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Update The User Details
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: null
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: false
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: body of the name if the user want to update the name, if not then send the Usual
+                email: 
+                  type: string
+                  description: body of the email if the user want to update the email, if not then send the Usual
+                url_profile_picture:  
+                  type: string
+                  description: body of the url profile picture if the user want to updat the url_profile_picture  if not then send the usual 
+                gender:
+                  type: string
+                  description: send the usual gender.
+                nationality: 
+                  type: string
+                  description: Update the Nationality if the User want
+                phone_number:
+                  type: string
+                  description: Update the Phone Number  
+              required:
+                - name
+                - url_profile_picture
+                - gender
+                - nationality
+                - phone_number
+            examples:
+              Send Update Email without profile picture:
+                value:
+                  name: Nanda Suparman
+                  email: nandasuparmin@gmail.com
+                  url_profile_picture: null 
+                  gender: Male
+                  nationality: Indonesia
+                  phone_number: 6288844443322
+
+  /user/delete-details:
+    delete:
+      summary: Only User can Delete the User Details  
+      operationId: delete-user-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Profile Details
+      responses:
+        '200':
+          description: Successfully Delete The User Details   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Delete Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Delete The User Details
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                  description: admin can delete user account by finding the email.
+              required:
+                - email
+            examples:
+              Delete User Nanda Permana:
+                value:
+                  email: nandapermana@gmail.com 
+  /user/upload-profile:
+    post:
+      summary: Update User Profile Picture  
+      operationId: user-upload-profile
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Profile Details 
+      responses:
+        '200':
+          description: Successfully Upload Profile Picture   
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Update Nanda Suparman Details:
+                  value:
+                    status: true
+                    message: Successfully Upload Profile Picture
+                    data:
+                      name: Nanda Suparman
+                      email: nandasuparman@gmail.com
+                      url_profile_picture: https://ik.imagekit.io/nh5wornpx/nanda-suparman-image_Gi4rVpl47.jpg
+                      gender: Male
+                      nationality: Indonesia
+                      is_verified: false
+                      phone_number: 6288844443322
+        '400':
+          description: Bad Request No Such User
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Cannot Get User Profile:
+                  value:
+                    status: false
+                    message: Cannot provide Update Profile Information Because it is Unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties: 
+                  media:
+                    type: string
+                    format: binary
+
+  /airport/search?keyword={keyword}:
+    get:
+      summary: Get Airport by searching the name of the airport.
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: true
+          description: to filter the airport based on the search value 
+      operationId: get-airport-get-by-name
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Airport
+      responses:
+        '200':
+          description: Successfully get the airport by the name   
+          content:
+            application/json:
+              examples:
+                Successfully Get Airport Soekarno Hatta By Name:
+                  value:
+                    status: true
+                    message: Successfully get airport information 
+                    data:
+                      name: Ngurah Rai (Bali) International Airport
+                      type: large_airport
+                      location: 
+                        location_code: ID-BA
+                        region : Denpasar
+                        country: Indonesia
+                        continent: Asia
+                      code:
+                        iata: DPS
+                        icao: WADD
+        '400':
+          description: Bad Request No Such Airports
+          content:
+            application/json:
+              examples:
+                Message Cannot Verify:
+                  value:
+                    status: false
+                    message: Cannot provide airport information because it is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /flight/get-airport:
+    post:
+      summary: Admin Can get the list of airport from consuming the API from the /airport/search/{{ data }}
+      operationId: admin-get-airport-data
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Get Airport Data
+          content:
+            application/json:
+              examples:
+                Successfully Get Airport Data:
+                  value:
+                    status: true
+                    message: Successfully Get Airport Data 
+                    data: <Airport DATA>
+        '500':
+          description: Request Timeout after request above 200000ms 
+          content:
+            application/json:
+              examples:
+                Request Timeout:
+                  value:
+                    status: false
+                    message: User abort the connection  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                searchValue: 
+                  type: string
+                  description: searchValue body is required to provide the data for consuming the /api/airport/search 
+              required:
+                - message
+            examples:
+              Get Airport List:
+                value:
+                  searchValue: jakarta 
+
+  # /flight/get-flight-api:
+  #   get:
+  #     summary: Admin Can get the Flight On Going data using goflightlabs.com API
+  #     operationId: admin-get-flight-api-data
+  #     security: 
+  #       - bearerAuth: []
+  #     tags: 
+  #       - Admin - Flight Schedule
+  #     responses:
+  #       '200':
+  #         description: Get Flight Schedule Data from goflightlabs.com
+  #         content:
+  #           application/json:
+  #             schemas:
+  #               $ref: '#/components/schemas/Flight'
+  #             examples:
+  #               Successfully Create Flight Schedule:
+  #                 value:
+  #                   status: true
+  #                   message: Successfully Get Flight Data 
+  #                   data: <FLIGHT DATA>
+  #       '500':
+  #         description: Request Timeout after request above 200000ms 
+  #         content:
+  #           application/json:
+  #             examples:
+  #               Request Timeout:
+  #                 value:
+  #                   status: false
+  #                   message: User abort the connection  
+  #                   data: null
+  #       '401':
+  #         $ref: '#/components/responses/UnauthorizedError'
+
+  /flight/get-flight:
+    get:
+      summary: Admin Can get the Flight On the database API
+      operationId: admin-get-flight-data
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Get Flight Schedule Data from database
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Get Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Get Flight Data 
+                    data: 
+                      flight_id: 1
+                      flight_code: "DPSCTNLKCKG01"
+                      departure_iata: "DPS"
+                      departure_time: "2022-10-12T00:12:00.000Z"
+                      arrival_iata: "DPS"
+                      arrival_time: "2022-10-12T00:12:00.000Z"
+                      airline: "Citilink"
+                      airline_code: "CTLNK"
+                      airline_logo: "http://2.bp.blogspot.com/-i-D40gBOdt8/VC0p4CqbEQI/AAAAAAAAFMM/aX7TYbmWhFk/s1600/Logo%2BCitilink.png"
+                      seat_capacity: 150
+                      price: 1500000
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /flight/create:
+    post:
+      summary: Admin Can Create Flight, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-create-flight
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Create Flight Schedule
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Create Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Create Flight Schedule to Order 
+                    data:
+                      id: 1
+                      airport: Ngurah Rai (Bali) International Airport
+                      flight_code: DPSCTLNK01
+                      departure_iata_code: CGK
+                      departure_icao_code: WIII
+                      departure_time: "2022-12-01 08:00:00"
+                      arrival_iata_code: DPS 
+                      arrival_icao_code: WDDD
+                      arrival_time: "2022-12-01 12:00:00"
+                      airline: Citilink
+                      airline_code: CTLNK
+                      airline_logo: https://imgur.one/23123123
+                      seat_capacity: 30
+                      price: 700000
+        '400':
+          description: Bad Request Cannot Create the Flight Schedule
+          content:
+            application/json:
+              examples:
+                Cannot Create the Flight Schedule:
+                  value:
+                    status: false
+                    message: Cannot Create the Flight Schedule -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flight_code:
+                  type: string
+                  description: random generated Code USING IATA-PLANECODE-FlightDate example = DPSCTLNK01
+                departure_iata_code: 
+                  type: string
+                  description: We can request by getting the departure aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                departure_icao_code: 
+                  type: string
+                  description: We can request by getting the aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                departure_time:
+                  type: date
+                  description: Departure Time from the Flight
+                arrival_iata_code: 
+                  type: string
+                  description: We can request by getting the arrival aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                arrival_icao_code: 
+                  type: string
+                  description: We can request by getting the aiport by using either the code or by searching using the endpoint of /airport/code or /airport/search
+                arrival_time:
+                  type: date
+                  description: Departure Time from the Flight
+                airline_id:
+                  type: integer
+                seat_capacity:
+                  type: integer
+                price:
+                  type: float
+            examples:
+              Create CGK-DPS Flight:
+                value:
+                  departure_iata_code: CGK
+                  departure_icao_code: WIII
+                  departure_time: "2022-12-01 08:00:00"
+                  arrival_iata_code: DPS 
+                  arrival_icao_code: WDDD
+                  arrival_time: "2022-12-01 12:00:00"
+                  airline_id: 1
+                  seat_capacity: 30
+                  price: 700000
+
+  /flight/delete:
+    delete:
+      summary: Admin Can Delete Flight, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-delete-flight
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Flight Schedule
+      responses:
+        '200':
+          description: Delete Flight Schedule
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Delete Flight Schedule:
+                  value:
+                    status: true
+                    message: Successfully Delete Flight Schedule to Order 
+                    data:
+                      id: 1
+        '400':
+          description: Bad Request Cannot Delete the Flight Schedule
+          content:
+            application/json:
+              examples:
+                Cannot Create the Flight Schedule:
+                  value:
+                    status: false
+                    message: Cannot Delete the Flight Schedule -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flight_id:
+                  type: int
+                  description: id of the flight to be deleted
+            examples:
+              Delete CGK-DPS Flight:
+                value:
+                  flight_id: 1
+
+  /passenger/save:
+    post:
+      summary: User can save the passenger to ease the invitation this data Goes to Passenger and PassengerDetail model
+      operationId: user-save-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Save Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Save Abel Jollando Data:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passengger_category: Adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "123123123123"
+                      gender: Male
+                Successfully Save Abel Jollando Data Without Passport:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passenger_category: Adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: null
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: 
+                  type: string
+                  description: User can add the name of the passenger.
+                nik: 
+                  type: string
+                  description: User can add NIK (ID number) of the passenger.
+                passport_number: 
+                  type: string
+                  description: User can add Passport number of the passenger.
+                gender:
+                  type: enum
+                  description: User can add gender of the passenger.
+            examples:
+              Save Abel Jollando with passport number:
+                value:
+                  passenger_category: Adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  passport_number: "2131231231"
+                  gender: Male
+              Save Abel Jollando without passport number:
+                value:
+                  passenger_category: Adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  gender: Male
+
+  /passenger/get:
+    get:
+      summary: User get the data passenger From Passenger Detail according to the buyer_id (logged user id)
+      operationId: user-get-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Get Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Save Abel Jollando Data:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      id: 1
+                      buyer_id: 1
+                      passengger_category: Adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "123123123123"
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+
+  /passenger/update:
+    put:
+      summary: User can update the passenger data in PassengerDetail according to the detail of the user id in Passenger Model
+      operationId: user-update-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Update Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Update Abel Jollando Passport Number:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      passenger_id: 1
+                      buyer_id: 1
+                      passenger_category: Adult
+                      name: Abel Jollando
+                      nik: "32700333111111"
+                      passport_number: "180003"
+                      gender: Male
+                Successfully Update Abel Jollando Data Change name:
+                  value:
+                    status: true
+                    message: Successfully Save Passenger Data
+                    data:
+                      passenger_id: 1
+                      buyer_id: 1
+                      passenger_category: Adult
+                      name: Abel Jollando Maulana
+                      nik: "32700333111111"
+                      passport_number: null
+                      gender: Male
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passenger_id:
+                  type: integer
+                  description: Passenger id to get the data.  
+                name: 
+                  type: string
+                  description: User can add the name of the passenger.
+                nik: 
+                  type: string
+                  description: User can add NIK (ID number) of the passenger.
+                passport_number: 
+                  type: string
+                  description: User can add Passport number of the passenger.
+                gender:
+                  type: enum
+                  description: User can add gender of the passenger.
+            examples:
+              Update Abel Jollando passport number:
+                value:
+                  passenger_id: 1
+                  passenger_category: Adult
+                  name: Abel Jollando
+                  nik: "32700333111111"
+                  passport_number: "180003"
+                  gender: Male
+              Update Abel Jollando Name:
+                value:
+                  passenger_id: 1
+                  passenger_category: Adult
+                  name: Abel Jollando Maulana
+                  nik: "32700333111111"
+                  gender: Male
+
+  /passenger/delete:
+    delete:
+      summary: User can delete the passenger this deleteion data Goes to Passenger and PassengerDetail model
+      operationId: user-delete-passenger
+      security:
+        - bearerAuth: []
+      tags:
+        - User - Passenger Data
+      responses:
+        '200':
+          description: Successfully Delete Passenger Data
+          content:  
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/PassengerDetail'
+              examples:
+                Successfully Delete Abel Jollando Data:
+                  value:  
+                    status: true
+                    message: Successfully Delete Passenger Data
+          '401':
+            $ref: '#/components/responses/UnauthorizedError'
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passenger_id: 
+                  type: integer
+                  description: User can add the name of the passenger.
+            examples:
+              Delete Passenger:
+                value:
+                  id: 1
+
+  /booking/flights/search?departure_iata={departure_iata}&arrival_iata={arrival_iata}&flight_date={flight_date}&seat_total={seat_total}&page={page}&record={record}:
+    get:
+      summary: User Can get the List of Flights, Here we need to know who is currently login by using token for getting the `user id` data.
+      parameters:
+        - in: query
+          name: departure_iata
+          schema:
+            type: string
+          required: true 
+        - in: query
+          name: arrival_iata
+          schema:
+            type: string
+          required: true 
+        - in: query
+          name: flight_date
+          schema:
+            type: string
+          required: true 
+        - in: query
+          name: seat_total
+          schema:
+            type: integer
+          required: true 
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: true 
+        - in: query
+          name: record
+          schema:
+            type: integer
+          required: true 
+      operationId: user-get-flights
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Get Flight    
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Flight'
+              examples:
+                Successfully Get the Flight:
+                  value:
+                    status: true
+                    message: Successfully Get Flights
+                    pagination: 
+                      totalRow: 7
+                      totalPage: 4
+                      next:
+                        page: 2
+                        limit: 2
+                    data:
+                      - flight_id: 8
+                        flight_code: BDGSLDPS01
+                        departure_iata: BDG
+                        departure_icao: WIDD                        
+                        departure_time: "2022-12-12T10:12:00.000Z"
+                        arrival_iata: DPS
+                        arrival_icao: WDDD
+                        arrival_time: "2022-11-12T12:11:00.000Z"
+                        airline: Lion Air
+                        airline_code: SL
+                        airline_logo: https://ik.imagekit.io/nh5wornpx/Prime_Flight_Airlines/lion_air.png
+                        seat_capacity: 150
+                        price: 1300000
+                      - flight_id: 9
+                        flight_code: BDGGADPS01
+                        departure_iata: BDG
+                        departure_icao: WIDD                        
+                        departure_time: "2022-12-12T10:10:00.000Z"
+                        arrival_iata: DPS
+                        arrival_icao: WDDD
+                        arrival_time: "2022-11-12T12:12:00.000Z"
+                        airline: Garuda Indonesia
+                        airline_code: GA
+                        airline_logo: https://ik.imagekit.io/nh5wornpx/Prime_Flight_Airlines/garuda_indonesia.png
+                        seat_capacity: 90
+                        price: 134200     
+      # requestBody:
+      #   content:
+      #     application/json:
+      #       schema:
+      #         type: object
+      #         properties:
+      #           departure_iata: 
+      #             type: string
+      #             description: the id of departure airport 
+      #           arrival_iata: 
+      #             type: string
+      #             description: the id of arrival airport 
+      #           flight_date: 
+      #             type: date
+      #             description: departure flight date 
+      #       examples:
+      #         Get the Flight From the User Searches :
+      #           value:
+      #             departure_iata: JKT
+      #             arrival_iata: DPS
+      #             flight_date:  "2022-09-10 20:00" 
+
+  /booking/order:
+    post:
+      summary: User Can Create Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-create-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Create Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Book the Flight:
+                  value:
+                    status: true
+                    message: Successfully Create Booking 
+                    data:
+                     booking_id: 8
+                     booking_code: DPSQGCKG01
+                     flight_code: DPSQGCKG01
+                     document_url: https://imgur.one/3dxxse23
+                     departure_iata: DPS
+                     departure_date: "12-10-2022"
+                     departure_time: "0:12"
+                     arrival_iata: CKG
+                     arrival_date: "12-10-2022"
+                     arrival_time: "1:12"
+                     seat_capacity: 100
+                     seat: 2
+                     status: Pending
+                     price_per_seat: 1500000
+                     total_price: 3000000
+                      
+        '400':
+          description: Bad Request Can't Create booking No Flight Info
+          content:
+            application/json:
+              examples:
+                Message Cannot Create Booking:
+                  value:
+                    status: false
+                    message: Cannot create booking because the flight is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                flight_id: 
+                  type: integer
+                  description: we get the flight id and then we create the booking 
+              required:
+                - flight_id
+            examples:
+              Get the Flight ID from flight that admin created :
+                value:
+                  flight_id: 1 
+                  passenger_id: [1,2]   
+
+  /booking/mybooking:
+    get:
+      summary: User Can Get the User Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-get-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Get My Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get My Booking:
+                  value:
+                    status: true
+                    message: Successfully Get My Booking 
+                    data:
+                      - booking_id: 1
+                        booking_code: Z3DPSCTLNK01
+                        flight_code: DPSCTLNK01
+                        document_url: https://imgur.one/3dxxse23
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                        seat: 3
+                        status: pending
+                        price_per_seat: 700000
+                        total_price: 2100000
+        '400':
+          description: Bad Request Can't Get booking booking Info
+          content:
+            application/json:
+              examples:
+                Message Cannot Get Booking:
+                  value:
+                    status: false
+                    message: Cannot create booking because the flight is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /booking/update-order:
+    put:
+      summary: User Can Update Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-update-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Update Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Update Booking Seat into Only 2 Seat from 3 Seat:
+                  value:
+                    status: true
+                    message: Successfully Update Booking 
+                    data:
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure_iata: CKG
+                      departure_iata: WIII                        
+                      departure_time: "2022-09-10 20:00:00"
+                      arrival_iata: DPS
+                      arrival_iata: WDDD
+                      arrival_time: "2022-09-10 23:00:00"
+                      seat: 2
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 140000
+        '400':
+          description: Bad Request Can't Update booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Update Booking:
+                  value:
+                    status: false
+                    message: Cannot update booking for this passenger   
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passenger_id: 
+                  type: integer
+                  description: Passenger Id is to get the updated  
+                seat:
+                  type: integer
+                  description: Passenger Seat Count  
+              required:
+                - passenger_id
+                - seat 
+            examples:
+              Update Seat :
+                value:
+                    booking_id: 1
+                    booking_code: Z3DPSCTLNK01
+                    flight_code: DPSCTLNK01
+                    document_url: https://imgur.one/3dxxse23
+                    departure_iata: CKG
+                    departure_iata: WIII                        
+                    departure_time: "2022-09-10 20:00:00"
+                    arrival_iata: DPS
+                    arrival_iata: WDDD
+                    arrival_time: "2022-09-10 23:00:00"
+                    seat: 2
+                    status: pending
+                    price_per_seat: 700000
+                    total_price: 140000
+
+  /booking/cancel-order:
+    post:
+      summary: User Can Cancel Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: user-cancel-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Send Request Cancel Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Cancel a Flight with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Send Request Cancel Booking 
+                    data:
+                      booking_id: 1
+                      status: Pending
+                      message: Your cancel request is being processed.
+                      cancel_reason: I can't travel in that period of time, cause my graduation. 
+                      
+        '400':
+          description: Bad Request Can't Cancel Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Cancel booking:
+                  value:
+                    status: false
+                    message: Cannot Cancel booking because the flight is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+                cancel_reason:
+                  type: text
+                  description: we create the cancel reason to get the data. 
+              required:
+                - id
+                - cancel_reason 
+            examples:
+              Cancel Flight Because of Graduation:
+                value:
+                  booking_id: 1 
+                  cancel_reason: I can't travel in that period of time, cause my graduation.
+
+  /booking/checkout:
+    post:
+      summary: User Can Checkout the booking and get the tickets in the documents in the column of `document_url` and here we can save the data of booking into `Transactions` by getting the column booking_id, after this it redirects to the ticket.
+      operationId: user-checkout-booking-to-transaction
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Checkout Booking and Create Transaction.
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+                $ref: '#/components/schemas/Transaction'
+              examples:
+                Successfully Checkout Booking:
+                  value:
+                    status: true
+                    message: Successfully Checkout Booking
+                    data:
+                      booking_id: 29
+                      transaction_id: 30
+                      document_url: "https://ik.imagekit.io/nh5wornpx/2023-01-01_01_40_21DPSQGCKG01_KpVgpGgQK.pdf"
+                      barcode_url: "https://ik.imagekit.io/nh5wornpx/2023-01-01_01_40_17DPSQGCKG01_barcode_-t2uL07Xx.png"
+                      transaction_status: "Success"
+                      total_price: 3000000
+
+        '400':
+          description: Bad Request Can't Checkout booking, because no booking info 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Cannot checkout booking because no booking info  
+                    data: null
+        '403':
+          description: Cannot checkout booking because You are not the authorized user 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Cannot checkout booking because You are not the authorized user  
+                    data: null
+        '409':
+          description: Cannot checkout booking because User already checkout 
+          content:
+            application/json:
+              examples:
+                Message Cannot Checkout Booking:
+                  value:
+                    status: false
+                    message: Your transaction for booking of DPSCTNLKCKG01 is already Success
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                booking_id: 
+                  type: integer
+                  description: we get the flight id and then we create the booking 
+              required:
+                - booking_id
+            examples:
+              Get the Booking ID that user want to checkout :
+                value:
+                  booking_id: 29 
+
+  /booking/my-transaction:
+    get:
+      summary: User Can Get Transaction History.
+      operationId: user--booking-to-transaction
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Booking
+      responses:
+        '200':
+          description: Successfully Checkout Booking and Create Transaction.
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+                $ref: '#/components/schemas/Transaction'
+              examples: 
+                Get History Booking:
+                  value:
+                    status: true
+                    message: Successfully Get My Transaction 
+                    data:
+                      - "booking_id": 13
+                        "total_seat": 3
+                        "user_id": 3
+                        "booking_status": "Success"
+                        "booking_code": "BDGGADPS01"
+                        "document_url": null
+                        "price_per_seat": 134200
+                        "flight_code": "BDGGADPS01"
+                        "airline": "Garuda Indonesia"
+                        "airline_code": "GA"
+                        "departure_iata_code": "BDG"
+                        "arrival_iata_code": "DPS"
+                        "to_char": "2022-11-12 10:11"
+                        "name": "Abel Jollando"
+                        "status": "Success"
+                        "total_price": 402600
+                      - "booking_id": 18
+                        "total_seat": 2
+                        "user_id": 3
+                        "booking_status": "Success"
+                        "booking_code": "DPSQGCKG01"
+                        "document_url": null
+                        "price_per_seat": 1500000
+                        "flight_code": "DPSQGCKG01"
+                        "airline": "Citilink"
+                        "airline_code": "QG"
+                        "departure_iata_code": "DPS"
+                        "arrival_iata_code": "CKG"
+                        "to_char": "2022-10-12 12:10"
+                        "name": "Daniel Manurung"
+                        "status": "Success"
+                        "total_price": 3000000
+
+  /booking/all:
+    get:
+      summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-get-all-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Get All Booking   
+          content:
+            application/json:
+              schemas:
+                type: array
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get All Booking:
+                  value:
+                    status: true
+                    message: Successfully Get All Booking 
+                    data:
+                      booking_id: 1
+                      booking_code: Z3DPSCTLNK01
+                      flight_code: DPSCTLNK01
+                      document_url: https://imgur.one/3dxxse23
+                      departure:
+                        departure_iata: CKG
+                        departure_iata: WIII                        
+                        departure_time: "2022-09-10 20:00:00"
+                      arrival:
+                        arrival_iata: DPS
+                        arrival_iata: WDDD
+                        arrival_time: "2022-09-10 23:00:00"
+                      seat: 3
+                      status: pending
+                      price_per_seat: 700000
+                      total_price: 2100000
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /booking/details/:booking_id:
+    get:
+      summary: Admin Can See All Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      parameters:
+        - in: path
+          name: booking_id
+          schema:
+            type: integer
+          required: true
+          description: ID for the Booking to get the Details
+      operationId: admin-get-booking-details
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Get Booking Details   
+          content:
+            application/json:
+              schemas:
+                type: array
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Details:
+                  value:
+                    status: true
+                    message: Successfully Get All Booking 
+                    data:
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Abel Jollando"
+                      - "status": "Success"
+                        "seat": 2
+                        "price_per_seat": 1500000
+                        "departure_time": "2022-10-12T00:12:00.000Z"
+                        "departure_iata_code": "DPS"
+                        "arrival_time": "2022-10-12T01:12:00.000Z"
+                        "arrival_iata_code": "CKG"
+                        "passenger_category": "Adult"
+                        "gender": "Male"
+                        "name": "Daniel Manurung"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /booking/accept:
+    post:
+      summary: Admin Can Accept Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-accept-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Accept Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Accept Booking with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Accept Booking 
+                    data:
+                      booking_id: 1
+                      status: "Success"
+                      
+        '400':
+          description: Bad Request Can't Accept Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Accept booking:
+                  value:
+                    status: false
+                    message: Cannot accept booking because the booking is unavailable  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+            examples:
+              Accpet Booking:
+                value:
+                  booking_id: 1 
+
+
+  /booking/reject:
+    post:
+      summary: Admin Can Reject Booking, Here we need to know who is currently login by using token for getting the `user id` data.
+      operationId: admin-reject-booking
+      security: 
+        - bearerAuth: []
+      tags: 
+        - Admin - Booking
+      responses:
+        '200':
+          description: Successfully Reject Booking   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Reject Booking with a Reason:
+                  value:
+                    status: true
+                    message: Successfully Reject Booking the booking with id {{ id }}
+                    data:
+                      booking_id: 1
+                      status: "Rejected"
+                      message: "You can't book this flight because the flight is full"
+        '400':
+          description: Bad Request Can't Reject Booking
+          content:
+            application/json:
+              examples:
+                Message Cannot Reject booking:
+                  value:
+                    status: false
+                    message: Cannot reject booking because the booking is already verified and payed  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  description: we get the booking id of that user. 
+                message: 
+                  type: string
+              required:
+                - id
+                - message
+            examples:
+              Decline Booking:
+                value:
+                  booking_id: 1 
+                  message: "You can't book this flight because the flight is unavailable"
+
+  /notification/get:
+    get:
+      summary: get this user notification.
+      operationId: user-get-notification
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Notification
+      responses:
+        '200':
+          description: Successfully get notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Get Booking Notification:
+                  value:
+                    status: true
+                    message: Successfully Get the Notification 
+                    data:
+                      "id": 6
+                      "recipient_id": 2
+                      "actions": "BOOKING"
+                      "message": "You have been Booking the flight of DPSCTNLKCKG01"
+                      "read": false
+                      "createdAt": "2022-12-23T16:19:04.120Z"
+                      "updatedAt": "2022-12-23T16:19:04.120Z"
+        '204':
+          description: Successfully Get Notifications But Empty Notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Bad Request Can't Create Notification
+          content:
+            application/json:
+              examples:
+                Message Cannot Create Notification:
+                  value:
+                    status: false
+                    message: message -> {{err}}  
+                    data: null
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
