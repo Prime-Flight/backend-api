@@ -11,6 +11,16 @@ const imageStorage = multer.diskStorage({
   }
 });
 
+const ticketStorage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    callback(null, './public/ticket')
+  },
+  filename: (req, file, callback) => {
+    const filename = Date.now() + path.extname(file.originalname);
+    callback(null, namaFile);
+  }
+});
+
 module.exports = { 
   image: multer({
     storage: imageStorage,
@@ -19,6 +29,21 @@ module.exports = {
         callback(null, true);
       } else {
         const err = new Error('Please use png, jpg, and jpeg to upload the file');
+        callback(err, false);
+      }
+    },
+    onError: (err, next) => {
+      next(err);
+    }
+  }),
+
+  ticket: multer({
+    storage: ticketStorage,
+    fileFilter: (req, file, callback) => {
+      if (file.mimetype == 'application/pdf') {
+        callback(null, true);
+      } else {
+        const err = new Error('Please use pdf file for ticket');
         callback(err, false);
       }
     },

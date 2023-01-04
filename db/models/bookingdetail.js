@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     document_url: DataTypes.STRING,
+    qr_url: DataTypes.STRING,
     price_per_seat: DataTypes.FLOAT,
     user_cancel_reason: DataTypes.TEXT,
     admin_reject_reason: DataTypes.TEXT
