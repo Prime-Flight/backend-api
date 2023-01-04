@@ -64,7 +64,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `${HOST}/auth/verify-user?token=${verifyToken}`
+            const link = `${STAGING_HOST}/auth/verify-user?token=${verifyToken}`
             emailTemplate = await lib.email.getHtml('verification-email.ejs', { link: link })
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', emailTemplate)
 
