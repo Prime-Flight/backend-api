@@ -277,9 +277,9 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            let link = `https://primeflight-api-staging.km3ggwp.com/api/auth/verify-user?token=${verifyToken}`
-
-            const sendEmail = lib.email.sendEmail(email, 'Verify your email', `<p>Untuk memverifikasi anda bisa klik <a href=${link}>disini</a></p>`)
+            const link = `${STAGING_HOST}/auth/verify-user?token=${verifyToken}`
+            emailTemplate = await lib.email.getHtml('verification-email.ejs', { link: link })
+            const sendEmail = lib.email.sendEmail(email, 'Verify your email', emailTemplate)
 
             if (sendEmail) {
                 res.status(200).json({
