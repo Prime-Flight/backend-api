@@ -4,7 +4,7 @@ const Validator = require('fastest-validator');
 const v = new Validator;
 const jwt = require('jsonwebtoken')
 const lib = require('../lib')
-const { JWT_SIGNATURE_KEY, HOST, COUNTRY_API, STAGING_HOST, PRODUCTION_HOST} = process.env;
+const { JWT_SIGNATURE_KEY, HOST, COUNTRY_API } = process.env;
 const googleOauth2 = require('../utils/google');
 const fetch = require('node-fetch')
 const { AbortError } = require('node-fetch');
@@ -64,7 +64,7 @@ module.exports = {
             });
             const verifyToken = jwt.sign({ email }, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `${PRODUCTION_HOST}/auth/verify-user?token=${verifyToken}`
+            const link = `${HOST}/auth/verify-user?token=${verifyToken}`
             emailTemplate = await lib.email.getHtml('verification-email.ejs', { link: link })
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', emailTemplate)
 
@@ -277,7 +277,7 @@ module.exports = {
             }
             const verifyToken = jwt.sign(payload, JWT_SIGNATURE_KEY, { expiresIn: "6h" })
 
-            const link = `${PRODUCTION_HOST}/auth/verify-user?token=${verifyToken}`
+            const link = `${HOST}/auth/verify-user?token=${verifyToken}`
             emailTemplate = await lib.email.getHtml('verification-email.ejs', { link: link })
             const sendEmail = lib.email.sendEmail(email, 'Verify your email', emailTemplate)
 
