@@ -2711,11 +2711,11 @@ paths:
             schema:
               type: object
               properties:
-                notification_id:
+                id:
                   type: integer
               required:
-                - notification_id
+                - id
             examples:
               Read Notification Booking Flight:
                 value:
-                  notification_id: 6 
+                  id: 6 
