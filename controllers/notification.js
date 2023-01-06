@@ -23,10 +23,11 @@ module.exports = {
   },
   readNotification: async (req, res, next) => {
     try {
-      const { id } = req.user;
-      const { notification_id } = req.body;
-      const updateNotification = await Notification.update({ read: true }, { where: { id: notification_id }});
-      const notificationData = await Notification.findOne({ where: { id : notification_id }});
+      const { id } = req.body;
+      // update here
+      await Notification.update({ read: true }, { where: { id: id }});
+      // find the notification
+      const notificationData = await Notification.findOne({ where: { id : id }});
       if (notificationData.length == 0) {
         return res.status(204).json({
           status: true,
