@@ -2674,3 +2674,48 @@ paths:
                     data: null
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /notification/read:
+    put:
+      summary: get this user notification.
+      operationId: user-read-notification
+      security: 
+        - bearerAuth: []
+      tags: 
+        - User - Notification
+      responses:
+        '200':
+          description: Successfully Read Notifications   
+          content:
+            application/json:
+              schemas:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                Successfully Read Booking Notification:
+                  value:
+                    status: true
+                    message: Successfully Read Notification 
+                    data:
+                      "id": 6
+                      "recipient_id": 2
+                      "actions": "BOOKING"
+                      "message": "You have been Booking the flight of DPSCTNLKCKG01"
+                      "read": false
+                      "createdAt": "2022-12-23T16:19:04.120Z"
+                      "updatedAt": "2022-12-23T16:19:04.120Z"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notification_id:
+                  type: integer
+              required:
+                - notification_id
+            examples:
+              Read Notification Booking Flight:
+                value:
+                  notification_id: 6 
